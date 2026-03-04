@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: deployments/docker/Dockerfile
+    # image: order-api
+    container_name: school-schedule-container
+    ports:
+      - "8092:8092"
+      # environment:
+      # Use the container names as the hostnames
+      # - DB_URL=postgres://user:pass@my-existing-db:5432/orders?sslmode=disable
+      # - REDIS_URL=my-existing-redis:6379
+    networks:
+      - lo-network
+
+networks:
+  lo-network:
+    external: true

@@ -1,0 +1,117 @@
+run:
+  timeout: 5m
+  tests: true
+  skip-dirs:
+    - vendor
+    - bin
+    - dist
+    - coverage
+    - .git
+  skip-files:
+    - ".*_generated.go"
+    - ".*\\.pb.go"
+
+output:
+  format: colored-line-number
+  sort-results: true
+  print-issued-lines: true
+  print-linter-name: true
+
+linters:
+  enable:
+    # -------- Core correctness --------
+    - govet
+    - errcheck
+    - staticcheck
+    - ineffassign
+    - typecheck
+    - nilerr
+
+    # -------- Code quality --------
+    - revive
+    - gosimple
+    - unused
+    - exportloopref
+
+    # -------- Style & readability --------
+    - gofmt
+    - goimports
+    - whitespace
+    - unconvert
+    - gocritic
+
+    # -------- Security --------
+    - gosec
+
+  disable:
+    # Noisy / low-signal for large codebases
+    - gocyclo
+    - funlen
+    - lll
+    - dupl
+    - wsl
+
+linters-settings:
+  govet:
+    enable-all: false
+    enable:
+      - shadow
+      - nilness
+      - fieldalignment
+
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+  revive:
+    confidence: 0.8
+    rules:
+      - name: var-naming
+      - name: line-length-limit
+        arguments: [120]
+      - name: blank-imports
+      - name: errorf
+      - name: early-return
+      - name: superfluous-else
+      - name: unnecessary-stmt
+      - name: unused-parameter
+
+  gosec:
+    severity: medium
+    confidence: medium
+    excludes:
+      - G104 # defer errors often intentionally ignored
+      - G204 # subprocess launched with variable (common in infra tools)
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - performance
+      - style
+    disabled-checks:
+      - unnamedResult
+      - hugeParam
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-use-default: false
+
+  exclude-rules:
+    # Tests often break strict rules
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
+        - revive
+
+    # Mocks and generated code
+    - path: mocks/
+      linters:
+        - gosec
+        - revive
+
+    # Allow shadowing in short scopes (common Go pattern)
+    - linters:
+        - govet
+      text: "shadow"

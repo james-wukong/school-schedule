@@ -1,0 +1,26 @@
+vendor/
+tmp/
+storage/
+config/.env
+config/*.yaml
+
+
+# IDE and Editor files
+.idea/ # IntelliJ IDEA / GoLand project files
+.vscode/ # VS Code settings
+.DS_Store # macOS system files
+*.swp # Vim swap files
+*~ # Backup files
+
+# Build output directories
+bin/ # Compiled binaries (e.g., from `go build -o bin/myprogram`)
+build/ # Common build output directory
+
+# Environment variables files
+.env # Generic environment file
+.env.* # Specific environment files (e.g., .env.development)
+
+# OS generated files
+.project
+.classpath
+.settings/

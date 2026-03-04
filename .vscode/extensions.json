@@ -1,0 +1,26 @@
+{
+	"recommendations": [
+		// -------- Go development --------
+		"golang.Go", // Official Go extension: language server, formatting, debugging
+		"ms-vscode.go-tools", // Optional: Go tools support and snippets
+		"ms-vscode.vscode-go-sql", // SQL syntax highlighting for Go DB queries
+		// -------- Linting & formatting --------
+		"golangci-lint.golangci-lint", // Integrates golangci-lint into VS Code
+		// -------- Docker & containerization --------
+		// "ms-azuretools.vscode-docker", // Dockerfile, Docker Compose, container management
+		// -------- Version control --------
+		"eamodio.gitlens", // Advanced Git integration
+		"mhutchie.git-graph", // Visual Git history
+		// -------- Productivity & navigation --------
+		// "coenraads.bracket-pair-colorizer-2", // Bracket colors for readability
+		// "streetsidesoftware.code-spell-checker", // Optional: spell checker for comments
+		// "ms-vsliveshare.vsliveshare", // Optional: collaborative coding
+		// -------- YAML, JSON, and config files --------
+		"redhat.vscode-yaml", // YAML validation & autocomplete
+		"dbaeumer.vscode-eslint", // For JSON/JS config linting if needed
+		"editorconfig.editorconfig" // Enforces .editorconfig rules
+	]
+	//   "unwantedRecommendations": [
+	//     "some-unnecessary-extension" // Example: block extensions not allowed in team
+	//   ]
+}

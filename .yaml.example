@@ -1,0 +1,58 @@
+# configration yaml file
+app:
+  name:  "Shopping Mall"
+  version : "v1.0.0"
+  port :  8000
+  host:  go_dev_container
+  environment:  Development
+  debug:  true
+  apikey:  test_api_key!
+
+
+# database config section
+databases:
+  postgres:
+    driver:  postgres
+    user:  postgres
+    password:  008008
+    host:  postgres_container
+    port:  5432
+    db:  shopmall
+    ssl:  disable
+    dsn:  "user=postgres password=008008 host=postgres_container port=5432 dbname=shopmall sslmode=disable timezone=Asia/Shanghai"
+    url:  "postgres://postgres:008008@postgres_container/shopmall?sslmode=disable&timezone=Asia/Shanghai"
+
+# cache config section
+caches:
+  redis:
+    host:  redis_container
+    port:  6379
+    password: 
+    db:  0
+    expires:  7
+
+# new relic config section
+newrelic:
+  enabled:  false
+  appname:  "relic app name"
+  license:  "testing license"
+
+# jwt config section
+jwt:
+  secret:  825fdc1979a1c6f236e41b847d077abb7de05717deae93745c47eb30ee0b4e832e9af07f99eab455693ca64ae87a9be42bdb979d1abda3bbb1d7b17920910ff4
+  expires:  7
+  issuer:  james.com
+  refresh:  14
+
+#otp config section
+otp:
+  email:  james@gmail.com
+  password:  
+
+# tutorial is a key with a list of dictionaries.  
+# Each dictionary has key-value pairs with explicit typing.
+# tutorial:
+#    - name:  yaml
+#    - type:  awesome
+#    - rank:  1
+#    - born:  2001

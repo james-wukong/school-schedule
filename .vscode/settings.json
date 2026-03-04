@@ -1,0 +1,107 @@
+{
+	// ================================
+	// Go tooling & language server
+	// ================================
+	"go.useLanguageServer": true,
+	"go.gopath": "",
+	"go.toolsManagement.autoUpdate": true,
+	"go.toolsManagement.checkForUpdates": "local",
+	"gopls": {
+		"ui.semanticTokens": true,
+		"usePlaceholders": true,
+		"completeUnimported": true,
+		"staticcheck": true,
+		"matcher": "Fuzzy",
+		"symbolMatcher": "FastFuzzy",
+		"analyses": {
+			"unusedparams": true,
+			"unusedwrite": true,
+			"nilness": true,
+			"shadow": true
+		},
+		"codelenses": {
+			"generate": true,
+			"gc_details": false,
+			"test": true,
+			"tidy": true,
+			"upgrade_dependency": true
+		}
+	},
+	// ================================
+	// Formatting & imports
+	// ================================
+	"go.formatTool": "goimports",
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.organizeImports": "always"
+	},
+	// ================================
+	// Linting & static analysis
+	// ================================
+	"go.lintTool": "golangci-lint",
+	"go.lintOnSave": "package",
+	"go.lintFlags": [
+		"--fast"
+	],
+	// ================================
+	// Testing
+	// ================================
+	"go.testFlags": [
+		"-v",
+		"-count=1"
+	],
+	"go.testTimeout": "60s",
+	"go.coverOnSave": false,
+	// ================================
+	// Workspace & performance tuning
+	// ================================
+	"files.exclude": {
+		"**/.git": true,
+		"**/.DS_Store": true,
+		"**/vendor": true,
+		"**/bin": true,
+		"**/dist": true,
+		"**/coverage": true
+	},
+	"search.exclude": {
+		"**/vendor": true,
+		"**/bin": true,
+		"**/dist": true,
+		"**/coverage": true
+	},
+	"files.watcherExclude": {
+		"**/.git/**": true,
+		"**/vendor/**": true,
+		"**/bin/**": true,
+		"**/dist/**": true
+	},
+	// ================================
+	// Editor behavior (large teams)
+	// ================================
+	"editor.tabSize": 4,
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": false,
+	"editor.renderWhitespace": "boundary",
+	"editor.rulers": [
+		100
+	],
+	// ================================
+	// Git & source control
+	// ================================
+	"git.autofetch": true,
+	"git.confirmSync": false,
+	// ================================
+	// Docker / Dev Containers
+	// ================================
+	"docker.languageserver.formatter.ignoreMultilineInstructions": true,
+	// ================================
+	// Terminal defaults
+	// ================================
+	"terminal.integrated.defaultProfile.linux": "sh",
+	"terminal.integrated.defaultProfile.osx": "zsh",
+	"terminal.integrated.defaultProfile.windows": "PowerShell",
+	// ================================
+	// Security & trust
+	// ================================
+	"security.workspace.trust.enabled": true
+}
