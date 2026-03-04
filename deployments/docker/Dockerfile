@@ -4,6 +4,7 @@ FROM golang:1.25.7-alpine AS builder
 # Install development tools
 RUN go install github.com/air-verse/air@latest
 RUN go install github.com/go-swagger/go-swagger/cmd/swagger@latest
+RUN go install -tags 'postgres file' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
 WORKDIR /app
 

@@ -4,9 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/james-wukong/online-orders/internal/config"
-	"github.com/james-wukong/online-orders/internal/infrastructure/postgres"
-	"github.com/james-wukong/online-orders/internal/infrastructure/redis"
+	"github.com/james-wukong/school-schedule/internal/config"
+	"github.com/james-wukong/school-schedule/internal/infrastructure/postgres"
+	"github.com/james-wukong/school-schedule/internal/infrastructure/redis"
 )
 
 type App struct {

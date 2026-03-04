@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/james-wukong/online-orders/internal/config"
+	"github.com/james-wukong/school-schedule/internal/config"
 )
 
 func New(cfg config.RedisConfig) (*redis.Client, error) {

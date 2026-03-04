@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/james-wukong/online-orders/internal/config"
+	"github.com/james-wukong/school-schedule/internal/config"
 )
 
 func New(ctx context.Context, cfg config.PostgresConfig) (*pgxpool.Pool, error) {
