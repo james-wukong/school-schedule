@@ -1,55 +1,98 @@
+// Package config provides configuration loading and management for the application
+// Package config provides functionality to load application configuration
 package config
 
 import (
-	"log"
-	"os"
-	"strconv"
+	"github.com/james-wukong/school-schedule/internal/infrastructure/logger"
+	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Postgres PostgresConfig
-	Redis    RedisConfig
+	App          AppConfig      `mapstructure:"app"`
+	Database     DatabaseConfig `mapstructure:"databases"`
+	Caches       CacheConfig    `mapstructure:"caches"`
+	JWT          JWTConfig      `mapstructure:"jwt"`
+	OTP          OtpConfig      `mapstructure:"otp"`
+	KafkaBrokers []string       `mapstructure:"kafka_brokers"`
+}
+
+type AppConfig struct {
+	Name        string `mapstructure:"name"`
+	Version     string `mapstructure:"version"`
+	Port        int    `mapstructure:"port"`
+	Host        string `mapstructure:"host"`
+	Environment string `mapstructure:"environment"`
+	Debug       bool   `mapstructure:"debug"`
+	APIKey      string `mapstructure:"apikey"`
+}
+
+type DatabaseConfig struct {
+	Postgres PostgresConfig `mapstructure:"postgres"`
 }
 
 type PostgresConfig struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	DBName   string
-	SSLMode  string
+	Driver   string `mapstructure:"driver"`
+	User     string `mapstructure:"user"`
+	Password string `mapstructure:"password"` // String to preserve leading zeros
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	DB       string `mapstructure:"db"`
+	SSL      string `mapstructure:"ssl"`
+	DSN      string `mapstructure:"dsn"`
+	URL      string `mapstructure:"url"`
+}
+
+type CacheConfig struct {
+	Redis RedisConfig `mapstructure:"redis"`
 }
 
 type RedisConfig struct {
-	Addr     string
-	Password string
-	DB       int
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	Password string `mapstructure:"password"`
+	DB       int    `mapstructure:"db"`
+	Expires  int    `mapstructure:"expires"`
 }
 
-func Load() *Config {
-	pgPort, _ := strconv.Atoi(getEnv("POSTGRES_PORT", "5432"))
-	redisDB, _ := strconv.Atoi(getEnv("REDIS_DB", "0"))
-
-	return &Config{
-		Postgres: PostgresConfig{
-			Host:     getEnv("POSTGRES_HOST", "localhost"),
-			Port:     pgPort,
-			User:     getEnv("POSTGRES_USER", "postgres"),
-			Password: getEnv("POSTGRES_PASSWORD", "postgres"),
-			DBName:   getEnv("POSTGRES_DB", "myapp"),
-			SSLMode:  getEnv("POSTGRES_SSLMODE", "disable"),
-		},
-		Redis: RedisConfig{
-			Addr:     getEnv("REDIS_ADDR", "localhost:6379"),
-			Password: getEnv("REDIS_PASSWORD", ""),
-			DB:       redisDB,
-		},
-	}
+type JWTConfig struct {
+	Secret  string `mapstructure:"secret"`
+	Expires int    `mapstructure:"expires"`
+	Issuer  string `mapstructure:"issuer"`
+	Refresh int    `mapstructure:"refresh"`
 }
 
-func getEnv(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
+type OtpConfig struct {
+	Email    string `mapstructure:"email"`
+	Password string `mapstructure:"password"`
+}
+
+func InitConfig() *Config {
+	viper.SetConfigName("conf") // Name of your file (config.yaml)
+	viper.SetConfigType("yml")
+	viper.AddConfigPath(".") // Look in the current directory (project folder)
+
+	// Enable environment variable overrides
+	// Example: export APP_PORT=9000 will override the YAML
+	viper.SetEnvPrefix("")
+	viper.AutomaticEnv()
+
+	// Initialize logger for config loading with console output only
+	conLog := logger.New(logger.LogConfig{
+		EnableConsole: true,
+		FilePath:      "",
+		// MaxSize:       5,    // Rotate every 5MB
+		// MaxBackups:    10,   // Keep last 10 files
+		// Compress:      false, // Save disk space
+	})
+
+	if err := viper.ReadInConfig(); err != nil {
+		conLog.Error().Err(err).Msg("Failed to read config file")
 	}
-	return fallback
+
+	var config Config
+	if err := viper.Unmarshal(&config); err != nil {
+		conLog.Error().Err(err).Msg("Failed to unmarshal config")
+	}
+
+	return &config
 }

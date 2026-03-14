@@ -1,18 +1,18 @@
 run:
   timeout: 5m
   tests: true
-  skip-dirs:
-    - vendor
-    - bin
-    - dist
-    - coverage
-    - .git
-  skip-files:
-    - ".*_generated.go"
-    - ".*\\.pb.go"
+  # skip-dirs:
+  #   - vendor
+  #   - bin
+  #   - dist
+  #   - coverage
+  #   - .git
+  # skip-files:
+  #   - ".*_generated.go"
+  #   - ".*\\.pb.go"
 
 output:
-  format: colored-line-number
+  formats: colored-line-number
   sort-results: true
   print-issued-lines: true
   print-linter-name: true
@@ -31,7 +31,8 @@ linters:
     - revive
     - gosimple
     - unused
-    - exportloopref
+    # - exportloopref
+    - copyloopvar
 
     # -------- Style & readability --------
     - gofmt
@@ -96,6 +97,15 @@ issues:
   max-issues-per-linter: 0
   max-same-issues: 0
   exclude-use-default: false
+  exclude-files:
+    - ".*_generated.go"
+    - ".*\\.pb.go"
+  exclude-dirs:
+    - vendor
+    - bin
+    - dist
+    - coverage
+    - .git
 
   exclude-rules:
     # Tests often break strict rules

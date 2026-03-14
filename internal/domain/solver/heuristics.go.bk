@@ -1,0 +1,28 @@
+package solver
+
+import (
+	"math"
+
+	"github.com/james-wukong/school-schedule/internal/domain/scheduling"
+)
+
+func SelectUnassignedVariable(vars []scheduling.Variable,
+	sol scheduling.Solution,
+) *scheduling.Variable {
+	var selected *scheduling.Variable
+	// minDomain := int(^uint(0) >> 1) // max int
+	minDomain := math.MaxInt
+
+	for i := range vars {
+		v := &vars[i]
+		if _, assigned := sol[v.ID]; assigned {
+			continue
+		}
+		if len(v.Domain) < minDomain {
+			minDomain = len(v.Domain)
+			selected = v
+		}
+	}
+
+	return selected
+}

@@ -1,0 +1,59 @@
+# configration yaml file
+app:
+  name: "School Scheduling System"
+  version: "v1.0.0"
+  port: 8092
+  host: "school-schedule-container"
+  environment: "dev"
+  debug: true
+  apikey: "1a02b3c4d5e6f7g8h9i0j"
+
+
+# database config section
+databases:
+  postgres:
+    driver: "postgres"
+    user: "postgres"
+    password: "008008"
+    host: "postgres_container"
+    port: 5432
+    db: "scheduling"
+    ssl: "disable"
+    dsn: "user=postgres password=008008 host=postgres_container port=5432 dbname=scheduling sslmode=disable timezone=Asia/Shanghai"
+    url: "postgres://postgres:008008@postgres_container/scheduling?sslmode=disable&timezone=Asia/Shanghai"
+
+# cache config section
+caches:
+  redis:
+    host: "redis_container"
+    port: 6379
+    password: ""
+    db: 1
+    expires: 7
+
+# jwt config section
+jwt:
+  secret: "vXZC8UA/fTnpf8+8gIN+OFrINxFC77144IRhSz/YQ4I="
+  # hours
+  expires: 48
+  refresh: 168
+  issuer: "james.com"
+
+#otp config section
+otp:
+  email: "james@gmail.com"
+  password:
+
+kafka:
+  brokers:
+    - "kafka1: 9092"
+    - "kafka2: 9092"
+
+
+# tutorial is a key with a list of dictionaries.
+# Each dictionary has key-value pairs with explicit typing.
+# tutorial:
+#    - name: yaml
+#    - type: awesome
+#    - rank: 1
+#    - born: 2001
