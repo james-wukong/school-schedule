@@ -33,7 +33,7 @@ func Schedule() {
 	rng := NewFastRNG()
 
 	fmt.Println("╔══════════════════════════════════════╗")
-	fmt.Println("║     School Class Scheduler v1.0      ║")
+	fmt.Printf("║     School Class Scheduler v%.1f      ║\n", 1.0)
 	fmt.Println("╚══════════════════════════════════════╝")
 
 	// Initialize requirements, rooms and teachers

@@ -133,8 +133,11 @@ func GreedyConstruct(
 		}
 
 		if !placed {
-			fmt.Printf("  ⚠ Could not place: %s-%s / %s (%s)\n",
-				req.SchoolClass.Grade, req.SchoolClass.Class, req.Subject.Name, req.Teacher.Name)
+			fmt.Printf("  ⚠ Could not place: %s-%s | %s | %s\n",
+				req.SchoolClass.Grade, req.SchoolClass.Class,
+				req.Subject.Name,
+				req.Teacher.Name,
+			)
 		}
 	}
 
