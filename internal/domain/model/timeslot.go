@@ -1,8 +1,11 @@
 package model
 
-import "time"
+import (
+	"slices"
+)
 
 type DayOfWeek int
+type TimeSlotID int
 
 const (
 	Monday DayOfWeek = iota + 1
@@ -14,27 +17,41 @@ const (
 	Sunday
 )
 
-// type TimeSlot struct {
-// 	Day  string // "Monday", "Tuesday", etc.
-// 	Time string // "9:00", "10:00", etc.
-// }
-
 type TimeSlot struct {
-	StartTime string // "9:00AM", "1:00PM"
-	EndTime   string
+	StartTime string // "09:00", "13:00"
 	Day       DayOfWeek
-	ID        int
-	TenantID  int
 }
 
-func (t TimeSlot) DurationMinutes() int {
-	start, err := time.Parse("15:04", t.StartTime)
-	if err != nil {
-		return 0
+// AllTimeSlots returns 30 time slots: 5 days/week * 6 slots/day
+func AllTimeSlots() []TimeSlot {
+	slots := make([]TimeSlot, 0, 30)
+	for _, day := range []DayOfWeek{Monday, Tuesday, Wednesday, Thursday, Friday} {
+		for _, slot := range []string{"09:00", "10:00", "11:00", "13:00", "14:00", "15:00"} {
+			slots = append(slots, TimeSlot{Day: day, StartTime: slot})
+		}
 	}
-	end, err := time.Parse("15:04", t.EndTime)
-	if err != nil {
-		return 0
+	return slots
+}
+
+func AvailableTimeSlots(days []DayOfWeek, slots []string) map[DayOfWeek][]string {
+	if len(days) == 0 || len(slots) == 0 {
+		return make(map[DayOfWeek][]string, 0)
 	}
-	return int(end.Sub(start).Minutes())
+	s := make(map[DayOfWeek][]string)
+	for _, day := range days {
+		s[day] = slots
+	}
+	return s
+}
+
+func RemoveElement[T DayOfWeek | string](elements []T, element T) []T {
+	if len(elements) == 0 {
+		return make([]T, 0)
+	}
+	for k, v := range elements {
+		if v == element {
+			elements = slices.Delete(elements, k, k+1)
+		}
+	}
+	return elements
 }

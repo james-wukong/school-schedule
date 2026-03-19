@@ -4,14 +4,14 @@ import "testing"
 
 func TestClassroom_CanFit(t *testing.T) {
 	tests := []struct {
-		classroom Classroom
+		classroom Room
 		name      string
 		size      int
 		want      bool
 	}{
 		{
 			name: "fits exactly",
-			classroom: Classroom{
+			classroom: Room{
 				Capacity: 30,
 			},
 			size: 30,
@@ -19,7 +19,7 @@ func TestClassroom_CanFit(t *testing.T) {
 		},
 		{
 			name: "fits smaller",
-			classroom: Classroom{
+			classroom: Room{
 				Capacity: 30,
 			},
 			size: 20,
@@ -27,7 +27,7 @@ func TestClassroom_CanFit(t *testing.T) {
 		},
 		{
 			name: "does not fit larger",
-			classroom: Classroom{
+			classroom: Room{
 				Capacity: 30,
 			},
 			size: 40,

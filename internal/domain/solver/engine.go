@@ -1,35 +1,82 @@
+// Package solver Verifies teacher load vs. their available slots,
+// and that a suitable room exists for every requirement (lab-type and capacity checks)
+// Phase 1 – FeasibilityCheck() — Verifies teacher load vs. their available slots,
+// and that a suitable room exists for every requirement (lab-type and capacity checks).
+//
+// Phase 2 – GreedyConstruct() — Expands requirements into individual sessions,
+// sorts by most-constrained-first, then assigns each to the first valid
+// (slot, room) it finds. Conflict tracking uses three map[string]bool tables keyed
+// as "entityID_day_period" for O(1) lookup.
+//
+// Phase 3 – SimulatedAnnealing() — Runs iterations rounds of random neighbour moves
+// (swap two slots / relocate one slot / change room) with the standard Boltzmann
+// acceptance: e^(-Δcost/T). Uses copyAssignments() to avoid mutating the current best.
+//
+// Cost function — TotalCost = 1000 × hardViolations + softPenalty.
+// Hard violations count teacher/class/room double-bookings.
+// Soft penalties cover teacher gap windows (+2), same subject twice in one day (+3),
+// and heavy subjects placed in period 6+ (+1).
+//
+// Phase 4 – PrintTimetable() / PrintTeacherSchedules() — Renders a day×period grid per class
+// and a chronologically sorted schedule per teacher.
 package solver
 
 import (
 	"fmt"
 )
 
-// Schedule runs the CSP solver with local search
-func (s *Scheduler) Solve() error {
-	fmt.Println("Starting CSP-based scheduling for large school...")
+// ─────────────────────────────────────────────
+//  MAIN
+// ─────────────────────────────────────────────
 
-	// Step 1: Initialize domains (possible assignments for each class)
-	if err := s.initializeDomains(); err != nil {
-		return err
+func Schedule() {
+	rng := NewFastRNG()
+
+	fmt.Println("╔══════════════════════════════════════╗")
+	fmt.Println("║     School Class Scheduler v1.0      ║")
+	fmt.Println("╚══════════════════════════════════════╝")
+
+	// Initialize requirements, rooms and teachers
+	requirements, rooms, _ := Init()
+
+	totalSessions := 0
+	for _, r := range requirements {
+		totalSessions += r.SessionsPerWeek
 	}
-	fmt.Printf("Initialized domains for %d classes\n", len(s.Classes))
 
-	// Step 2: Constraint propagation (AC-3 algorithm)
-	if err := s.constraintPropagation(); err != nil {
-		return err
+	fmt.Println("\nSchool overview:")
+	fmt.Printf("  Requirements  : %d\n", len(requirements))
+	fmt.Printf("  Total sessions: %d\n", totalSessions)
+	fmt.Printf("  Rooms         : %d\n", len(rooms))
+
+	// ── Phase 1: Feasibility ──────────────────
+	issues := FeasibilityCheck(requirements, rooms)
+	if len(issues) > 0 {
+		fmt.Println("\nStopping: feasibility issues found.")
+		return
 	}
-	fmt.Println("Constraint propagation completed")
 
-	// Step 3: Backtracking search with MRV (Minimum Remaining Values) heuristic
-	if err := s.backtrackingSearch(); err != nil {
-		return err
-	}
-	fmt.Printf("Initial assignment found with %d conflicts\n", s.countHardViolations())
+	// ── Phase 2: Greedy Construction ──────────
+	fmt.Println("\n=== Phase 2: Greedy Construction ===")
+	initial := GreedyConstruct(rng, requirements, rooms)
+	fmt.Printf("  Placed %d / %d sessions\n", len(initial), totalSessions)
+	fmt.Printf("  Hard violations : %d\n", HardViolations(initial))
+	fmt.Printf("  Soft penalty    : %.1f\n", SoftViolations(initial))
 
-	// Step 4: Local search (Simulated Annealing) to improve solution
-	s.localSearch()
-	fmt.Printf("After local search: %d hard violations, %d soft violations\n",
-		s.countHardViolations(), s.countSoftViolations())
+	// ── Phase 3: Simulated Annealing ──────────
+	optimised := SimulatedAnnealing(
+		rng,
+		initial,
+		rooms,
+		800.0,  // initial temperature
+		0.997,  // cooling rate
+		20_000, // iterations
+	)
 
-	return nil
+	// TODO: Save assignments
+
+	// ── Phase 4: Output ───────────────────────
+	PrintTimetable(optimised)
+	PrintTeacherSchedules(optimised)
+	PrintSummary(optimised, totalSessions)
 }

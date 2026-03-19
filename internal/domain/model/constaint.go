@@ -1,6 +1,8 @@
 package model
 
 type ConstraintType string
+type ConstraintID int
+type ConstraintManagerID int
 
 const (
 	ConstraintTeacherAvailability ConstraintType = "teacher_availability"
@@ -10,7 +12,7 @@ const (
 )
 
 type Constraint struct {
-	ID       int
+	ID       ConstraintID
 	TenantID int
 	// Identifies which object the constraint applies to. For example,
 	// for teacher availability, this would be the teacher ID;
@@ -22,7 +24,7 @@ type Constraint struct {
 }
 
 type ConstraintManager struct {
-	ID             int
+	ID             ConstraintManagerID
 	TenantID       int
 	HardViolations int
 	SoftViolations int

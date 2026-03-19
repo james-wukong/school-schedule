@@ -4,6 +4,8 @@
 		"golang.Go", // Official Go extension: language server, formatting, debugging
 		"ms-vscode.go-tools", // Optional: Go tools support and snippets
 		"ms-vscode.vscode-go-sql", // SQL syntax highlighting for Go DB queries
+		// -------- Comment --------
+		"aaron-bond.better-comments",
 		// -------- Linting & formatting --------
 		"golangci-lint.golangci-lint", // Integrates golangci-lint into VS Code
 		// -------- Docker & containerization --------

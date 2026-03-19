@@ -1,145 +1,125 @@
 package solver
 
+// Hard violations count teacher/class/room double-bookings.
+// Soft penalties cover teacher gap windows (+2), same subject twice in one day (+3),
+// and heavy subjects placed in period 6+ (+1).
+
 import (
 	"fmt"
+	"slices"
+
+	"github.com/james-wukong/school-schedule/internal/domain/model"
 )
 
-type pair struct {
-	x, y int
+// BuildConflictIndex creates conflict index
+func BuildConflictIndex(assignments []*model.Assignment) *model.ConflictIndex {
+	idx := model.NewConflictIndex()
+
+	for _, a := range assignments {
+		tk := model.ConflictKey(a.Requirement.Teacher.ID, a.Slot)
+		ck := model.ConflictKey(a.Requirement.SchoolClass.ID, a.Slot)
+		rk := model.ConflictKey(a.Room.ID, a.Slot)
+
+		idx.TeacherSlot[tk] = append(idx.TeacherSlot[tk], a)
+		idx.ClassSlot[ck] = append(idx.ClassSlot[ck], a)
+		idx.RoomSlot[rk] = append(idx.RoomSlot[rk], a)
+	}
+	// fmt.Printf("teacher slot: %+v\n", idx.TeacherSlot)
+	// fmt.Printf("class slot: %+v\n", idx.ClassSlot)
+	// fmt.Printf("room slot: %+v\n", idx.RoomSlot)
+	return idx
 }
 
-// constraintPropagation uses AC-3 algorithm to reduce domains
-func (s *Scheduler) constraintPropagation() error {
-	queue := make([]pair, 0)
-
-	// Build initial queue
-	classIDs := make([]int, 0, len(s.Classes))
-	for id := range s.Classes {
-		classIDs = append(classIDs, id)
-	}
-
-	for i, id1 := range classIDs {
-		for _, id2 := range classIDs[i+1:] {
-			queue = append(queue, pair{id1, id2})
-			queue = append(queue, pair{id2, id1})
+// HardViolations returns total hard violations
+// A teacher can't be in two rooms at the same time
+// A class can't have two lessons simultaneously
+// A room can't host two classes at the same time
+// A teacher can only teach subjects they're qualified for
+func HardViolations(assignments []*model.Assignment) int {
+	idx := BuildConflictIndex(assignments)
+	count := 0
+	for _, lst := range idx.TeacherSlot {
+		if len(lst) > 1 {
+			count += len(lst) - 1
 		}
 	}
-
-	for len(queue) > 0 {
-		current := queue[0]
-		queue = queue[1:]
-
-		if s.revise(current.x, current.y) {
-			if len(s.Domains[current.x]) == 0 {
-				return fmt.Errorf("domain wipeout for class %s", current.x)
-			}
-
-			// Add neighbors to queue
-			for _, neighbor := range classIDs {
-				if neighbor != current.x && neighbor != current.y {
-					queue = append(queue, pair{neighbor, current.x})
-				}
-			}
+	for _, lst := range idx.ClassSlot {
+		if len(lst) > 1 {
+			count += len(lst) - 1
 		}
 	}
-	return nil
+	for _, lst := range idx.RoomSlot {
+		if len(lst) > 1 {
+			count += len(lst) - 1
+		}
+	}
+	return count
 }
 
-// revise removes inconsistent values from domain of x
-func (s *Scheduler) revise(x, y int) bool {
-	revised := false
-	xDomain := s.Domains[x]
-	yDomain := s.Domains[y]
+// SoftViolations returns total soft violations
+// Teachers prefer not to have isolated single periods ("windows")
+// Classes shouldn't have the same subject twice in one day
+// Heavy subjects (Math, Science) are better placed in the morning
+// Teachers shouldn't have more than N consecutive periods
+func SoftViolations(assignments []*model.Assignment) float64 {
+	penalty := 0.0
 
-	i := 0
-	for i < len(xDomain) {
-		xAssignment := xDomain[i]
+	teacherAssignedSlots := make(map[model.TeacherDaySlotsKey][]string, 0)
+	classDaySubjects := make(map[model.ClassDaySubjectKey][]model.SubjectID, 0)
 
-		// Check if there's a compatible value in y's domain
-		compatible := false
-		for _, yAssignment := range yDomain {
-			if s.areCompatible(xAssignment, yAssignment) {
-				compatible = true
-				break
-			}
+	for _, a := range assignments {
+		tk := model.TeacherDaySlotsKey{
+			TeacherID: a.Requirement.Teacher.ID,
+			Day:       a.Slot.Day,
 		}
+		teacherAssignedSlots[tk] = append(teacherAssignedSlots[tk], a.Slot.StartTime)
 
-		if !compatible {
-			xDomain = append(xDomain[:i], xDomain[i+1:]...)
-			revised = true
-		} else {
-			i++
+		ck := model.ClassDaySubjectKey{
+			ClassID: a.Requirement.SchoolClass.ID,
+			Day:     a.Slot.Day,
+		}
+		classDaySubjects[ck] = append(classDaySubjects[ck], a.Requirement.Subject.ID)
+
+		// 1. Heavy subjects placed in late periods (P6+)
+		isAfter, err := isTimeAfter(a.Slot.StartTime, "14:00")
+		if err != nil {
+			fmt.Printf("error caught transiting string to time: %v\n", err)
+		}
+		if a.Requirement.Subject.IsHeavy && isAfter {
+			// fmt.Printf("penalty +1, heavy subject %+v after 13:00\n", a.Requirement.Subject.Name)
+			penalty += 1.0
 		}
 	}
-	s.Domains[x] = xDomain
-	return revised
+
+	// 2. Teacher gap (window) detection per day
+	for _, slots := range teacherAssignedSlots {
+		slices.Sort(slots)
+		for i := 1; i < len(slots); i++ {
+			if minuteDifference(slots[i], slots[i-1]) > 10 {
+				// fmt.Printf("penalty +2, minute difference between %s and %s\n",
+				// 	slots[i], slots[i-1])
+				penalty += 2.0
+			}
+		}
+	}
+
+	// 3. Same subject twice in one day for a class
+	for _, subjects := range classDaySubjects {
+		slices.Sort(subjects)
+		for k, v := range subjects {
+			if k >= 1 && subjects[k-1] == v {
+				// fmt.Printf("penalty +3, subject id %d on key %+v\n",
+				// 	v, key)
+				penalty += 3.0
+			}
+		}
+	}
+
+	return penalty
 }
 
-// areCompatible checks if two assignments conflict
-func (s *Scheduler) areCompatible(entry1, entry2 *ScheduleEntry) bool {
-	// Same class - not compatible
-	if entry1.Class.ID == entry2.Class.ID {
-		return true
-	}
+const hardWeight = 1000.0
 
-	// Teacher conflict - same teacher at same time
-	if entry1.Teacher.ID == entry2.Teacher.ID &&
-		entry1.TimeSlot.Day == entry2.TimeSlot.Day &&
-		entry1.TimeSlot.StartTime == entry2.TimeSlot.StartTime {
-		return false
-	}
-
-	// Room conflict - same room at same time
-	if entry1.Classroom.ID == entry2.Classroom.ID &&
-		entry1.TimeSlot.Day == entry2.TimeSlot.Day &&
-		entry1.TimeSlot.StartTime == entry2.TimeSlot.StartTime {
-		return false
-	}
-
-	return true
-}
-
-// countHardViolations counts the number of hard constraint violations in the current
-// assignments
-func (s *Scheduler) countHardViolations() int {
-	violations := 0
-	for _, entry := range s.Assignments {
-		for otherID, otherEntry := range s.Assignments {
-			if otherID == entry.Class.ID {
-				continue
-			}
-			if entry.Teacher.ID == otherEntry.Teacher.ID &&
-				entry.TimeSlot.Day == otherEntry.TimeSlot.Day &&
-				entry.TimeSlot.StartTime == otherEntry.TimeSlot.StartTime {
-				violations++
-			}
-			if entry.Classroom.ID == otherEntry.Classroom.ID &&
-				entry.TimeSlot.Day == otherEntry.TimeSlot.Day &&
-				entry.TimeSlot.StartTime == otherEntry.TimeSlot.StartTime {
-				violations++
-			}
-		}
-	}
-	return violations / 2
-}
-
-// countSoftViolations counts the number of soft constraint violations in the current
-// assignments
-func (s *Scheduler) countSoftViolations() int {
-	violations := 0
-	for _, entry := range s.Assignments {
-		if len(entry.Class.PreferredDays) > 0 {
-			found := false
-			for _, day := range entry.Class.PreferredDays {
-				if day == entry.TimeSlot.Day {
-					found = true
-					break
-				}
-			}
-			if !found {
-				violations++
-			}
-		}
-	}
-	return violations
+func TotalCost(assignments []*model.Assignment) float64 {
+	return hardWeight*float64(HardViolations(assignments)) + SoftViolations(assignments)
 }
