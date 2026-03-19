@@ -12,9 +12,9 @@ import (
 )
 
 // BuildConflictIndex creates conflict index
-func BuildConflictIndex(assignments []*model.Assignment) *model.ConflictIndex {
+func BuildConflictIndex(assignments []*model.Assignment) (*model.ConflictIndex, int) {
 	idx := model.NewConflictIndex()
-
+	count := 0
 	for _, a := range assignments {
 		tk := model.ConflictKey(a.Requirement.Teacher.ID, a.Slot)
 		ck := model.ConflictKey(a.Requirement.SchoolClass.ID, a.Slot)
@@ -23,11 +23,15 @@ func BuildConflictIndex(assignments []*model.Assignment) *model.ConflictIndex {
 		idx.TeacherSlot[tk] = append(idx.TeacherSlot[tk], a)
 		idx.ClassSlot[ck] = append(idx.ClassSlot[ck], a)
 		idx.RoomSlot[rk] = append(idx.RoomSlot[rk], a)
+		// A teacher can only teach subjects they're qualified for
+		if !slices.Contains(a.Requirement.Teacher.Subjects, a.Requirement.Subject.ID) {
+			count++
+		}
 	}
 	// fmt.Printf("teacher slot: %+v\n", idx.TeacherSlot)
 	// fmt.Printf("class slot: %+v\n", idx.ClassSlot)
 	// fmt.Printf("room slot: %+v\n", idx.RoomSlot)
-	return idx
+	return idx, count
 }
 
 // HardViolations returns total hard violations
@@ -36,7 +40,7 @@ func BuildConflictIndex(assignments []*model.Assignment) *model.ConflictIndex {
 // A room can't host two classes at the same time
 // A teacher can only teach subjects they're qualified for
 func HardViolations(assignments []*model.Assignment) int {
-	idx := BuildConflictIndex(assignments)
+	idx, unqualified := BuildConflictIndex(assignments)
 	count := 0
 	for _, lst := range idx.TeacherSlot {
 		if len(lst) > 1 {
@@ -53,7 +57,7 @@ func HardViolations(assignments []*model.Assignment) int {
 			count += len(lst) - 1
 		}
 	}
-	return count
+	return count + unqualified
 }
 
 // SoftViolations returns total soft violations

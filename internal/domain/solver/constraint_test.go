@@ -606,3 +606,56 @@ func TestCombinedViolations(t *testing.T) {
 		t.Errorf("expected 2.0 soft penalty, got %.1f", soft)
 	}
 }
+
+// ─────────────────────────────────────────────
+//  CASE 10 — TEACHER UNQUALIFIED
+//  Alice is assigned to Science classes
+//  Expected: hard=1
+// ─────────────────────────────────────────────
+
+func TestTeacherUnqualified(t *testing.T) {
+	alice, _ := makeTeacherFixtures()
+	math, _, science := makeSubjectFixtures()
+	classA, _, _ := makeClassFixtures()
+	room101, _, _ := makeRoomFixtures()
+
+	// Both requirements use Alice
+	reqA := &model.Requirement{
+		ID:              1000,
+		SchoolClass:     classA,
+		Subject:         science,
+		Teacher:         alice,
+		SessionsPerWeek: 1,
+	}
+	reqB := &model.Requirement{
+		ID:              1001,
+		SchoolClass:     classA,
+		Subject:         math,
+		Teacher:         alice,
+		SessionsPerWeek: 1,
+	}
+
+	assignments := []*model.Assignment{
+		{
+			Requirement: reqA, Room: room101,
+			Slot: model.TimeSlot{
+				Day:       model.Monday,
+				StartTime: "09:00"},
+		}, // Alice | Science | Mon-09:00 | Room-101 | 10A <- unqualified teaching
+		{
+			Requirement: reqB, Room: room101,
+			Slot: model.TimeSlot{
+				Day:       model.Monday,
+				StartTime: "10:00"},
+		}, // Alice | Math | Mon-09:00 | Room-102 | 10B
+	}
+
+	hard := HardViolations(assignments)
+
+	fmt.Printf("\n[Case 10] Teacher unqualified\n")
+	fmt.Printf("  Hard violations: %d (want 1)\n", hard)
+
+	if hard != 1 {
+		t.Errorf("expected 1 hard violation, got %d", hard)
+	}
+}
