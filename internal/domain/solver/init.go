@@ -10,11 +10,21 @@ func Init() ([]*model.Requirement, []*model.Room, []*model.Teacher) {
 	slots := []string{"09:00", "10:00", "11:00", "13:00", "14:00", "15:00"}
 
 	// ── Subjects ──
-	math := model.NewSubject(model.Subject{ID: 101, Name: "Math", RequiresLab: false})
-	english := model.NewSubject(model.Subject{ID: 102, Name: "English", RequiresLab: false})
-	science := model.NewSubject(model.Subject{ID: 103, Name: "Science", RequiresLab: true})
-	history := model.NewSubject(model.Subject{ID: 104, Name: "History", RequiresLab: false})
-	pe := model.NewSubject(model.Subject{ID: 110, Name: "PE", RequiresLab: false})
+	math := model.NewSubject(model.Subject{
+		ID: 101, Name: "Math", RequiresLab: false, IsHeavy: true,
+	})
+	english := model.NewSubject(model.Subject{
+		ID: 102, Name: "English", RequiresLab: false, IsHeavy: true,
+	})
+	science := model.NewSubject(model.Subject{
+		ID: 103, Name: "Science", RequiresLab: true, IsHeavy: true,
+	})
+	history := model.NewSubject(model.Subject{
+		ID: 104, Name: "History", RequiresLab: false, IsHeavy: true,
+	})
+	pe := model.NewSubject(model.Subject{
+		ID: 110, Name: "PE", RequiresLab: false,
+	})
 
 	// ── Teachers ──
 	alice := model.NewTeacher(model.Teacher{ID: 1001, TenantID: 1, Name: "Alice",
@@ -67,7 +77,7 @@ func Init() ([]*model.Requirement, []*model.Room, []*model.Teacher) {
 		{ID: 202, TenantID: 1, Name: "Room-202", Capacity: 32, Type: model.Lab,
 			AvailableTimes: model.AvailableTimeSlots(days, slots),
 		},
-		{ID: 301, TenantID: 1, Name: "Room-301", Capacity: 60, Type: model.GYM,
+		{ID: 301, TenantID: 1, Name: "Room-301", Capacity: 60, Type: model.Gym,
 			AvailableTimes: model.AvailableTimeSlots(days, slots),
 		},
 	}

@@ -28,9 +28,7 @@ func BuildConflictIndex(assignments []*model.Assignment) (*model.ConflictIndex, 
 			count++
 		}
 	}
-	// fmt.Printf("teacher slot: %+v\n", idx.TeacherSlot)
-	// fmt.Printf("class slot: %+v\n", idx.ClassSlot)
-	// fmt.Printf("room slot: %+v\n", idx.RoomSlot)
+
 	return idx, count
 }
 
@@ -69,7 +67,7 @@ func SoftViolations(assignments []*model.Assignment) float64 {
 	penalty := 0.0
 
 	teacherAssignedSlots := make(map[model.TeacherDaySlotsKey][]string, 0)
-	classDaySubjects := make(map[model.ClassDaySubjectKey][]model.SubjectID, 0)
+	nonheavyDaySubjects := make(map[model.ClassDaySubjectKey][]model.SubjectID, 0)
 
 	for _, a := range assignments {
 		tk := model.TeacherDaySlotsKey{
@@ -82,39 +80,40 @@ func SoftViolations(assignments []*model.Assignment) float64 {
 			ClassID: a.Requirement.SchoolClass.ID,
 			Day:     a.Slot.Day,
 		}
-		classDaySubjects[ck] = append(classDaySubjects[ck], a.Requirement.Subject.ID)
-
+		if !a.Requirement.Subject.IsHeavy {
+			nonheavyDaySubjects[ck] = append(nonheavyDaySubjects[ck], a.Requirement.Subject.ID)
+		}
 		// 1. Heavy subjects placed in late periods (P6+)
 		isAfter, err := isTimeAfter(a.Slot.StartTime, "14:00")
 		if err != nil {
 			fmt.Printf("error caught transiting string to time: %v\n", err)
 		}
 		if a.Requirement.Subject.IsHeavy && isAfter {
-			// fmt.Printf("penalty +1, heavy subject %+v after 13:00\n", a.Requirement.Subject.Name)
 			penalty += 1.0
+		}
+
+		// 2. Preferred Day in requirements is not met
+		if slices.Contains(a.Requirement.PreferredDays, a.Slot.Day) {
+			penalty += 2.0
 		}
 	}
 
-	// 2. Teacher gap (window) detection per day
+	// 3. Teacher gap (window) detection per day
 	for _, slots := range teacherAssignedSlots {
 		slices.Sort(slots)
 		for i := 1; i < len(slots); i++ {
 			if minuteDifference(slots[i], slots[i-1]) > 10 {
-				// fmt.Printf("penalty +2, minute difference between %s and %s\n",
-				// 	slots[i], slots[i-1])
-				penalty += 2.0
+				penalty += 3.0
 			}
 		}
 	}
 
-	// 3. Same subject twice in one day for a class
-	for _, subjects := range classDaySubjects {
+	// 3. Same subject twice in one day for a non-heavy subject
+	for _, subjects := range nonheavyDaySubjects {
 		slices.Sort(subjects)
 		for k, v := range subjects {
 			if k >= 1 && subjects[k-1] == v {
-				// fmt.Printf("penalty +3, subject id %d on key %+v\n",
-				// 	v, key)
-				penalty += 3.0
+				penalty += 5.0
 			}
 		}
 	}

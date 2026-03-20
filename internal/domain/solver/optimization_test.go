@@ -69,7 +69,7 @@ func makeMoreRoomFixtures() (
 		},
 			[]string{"09:00", "10:00", "11", "13:00", "14:00", "15:00"},
 		)}
-	gimA = &model.Room{ID: 1010, TenantID: 1, Name: "Gym-100", Capacity: 60, Type: model.GYM,
+	gimA = &model.Room{ID: 1010, TenantID: 1, Name: "Gym-100", Capacity: 60, Type: model.Gym,
 		AvailableTimes: model.AvailableTimeSlots([]model.DayOfWeek{
 			model.Monday, model.Tuesday, model.Wednesday, model.Thursday, model.Friday,
 		},

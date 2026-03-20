@@ -1,58 +1,39 @@
 -- ============================================================================
 -- REVERSE/DOWN MIGRATION SCRIPT
 -- ============================================================================
--- Start transaction to ensure atomicity
-BEGIN;
+-- 1. Start fresh by rolling back any failed state
+ROLLBACK; 
 
--- 1. Drop Analytical and Summary Views
--- These must go first as they depend on the tables below.
-DROP VIEW IF EXISTS potential_conflicts;
-DROP VIEW IF EXISTS classroom_occupancy;
-DROP VIEW IF EXISTS teacher_workload;
-DROP VIEW IF EXISTS course_schedule;
-DROP VIEW IF EXISTS classroom_usage;
-DROP VIEW IF EXISTS teacher_schedule;
-DROP VIEW IF EXISTS schedule_summary;
+-- 2. Drop Views First (They depend on Tables)
+DROP VIEW IF EXISTS view_schedule_audit_conflicts CASCADE;
+DROP VIEW IF EXISTS v_room_conflicts CASCADE;
+DROP VIEW IF EXISTS view_room_utilization CASCADE;
+DROP VIEW IF EXISTS view_teacher_workload_stats CASCADE;
+DROP VIEW IF EXISTS view_class_timetables CASCADE;
+DROP VIEW IF EXISTS v_class_schedule CASCADE;
+DROP VIEW IF EXISTS view_teacher_schedules CASCADE;
 
--- 2. Drop Schedule Entries
--- Depends on: schedules, courses, teachers, classrooms, timeslots
-DROP TABLE IF EXISTS schedule_entries;
+-- 3. Drop Tables (Child tables first to satisfy Foreign Keys)
+-- Using CASCADE here is the "Industry Secret" to solving the Enum dependency
+DROP TABLE IF EXISTS schedules CASCADE;
+DROP TABLE IF EXISTS requirements CASCADE;
+DROP TABLE IF EXISTS room_timeslots CASCADE;
+DROP TABLE IF EXISTS teacher_timeslots CASCADE;
+DROP TABLE IF EXISTS teacher_subjects CASCADE;
+DROP TABLE IF EXISTS students CASCADE;
+DROP TABLE IF EXISTS rooms CASCADE;
+DROP TABLE IF EXISTS classes CASCADE;
+DROP TABLE IF EXISTS subjects CASCADE;
+DROP TABLE IF EXISTS teachers CASCADE;
+DROP TABLE IF EXISTS timeslots CASCADE;
+DROP TABLE IF EXISTS semesters CASCADE;
+DROP TABLE IF EXISTS schools CASCADE;
 
--- 3. Drop Schedules
--- Depends on: schools
-DROP TABLE IF EXISTS schedules;
+-- 4. Drop the Custom Type
+-- Now that 'schedules' is gone, this will succeed.
+DROP TYPE IF EXISTS schedule_status_enum;
 
--- 4. Drop Constraints and Rules
--- Depends on: schools
-DROP TABLE IF EXISTS constraints;
-
--- 5. Drop Timeslots
--- Depends on: schools
-DROP TABLE IF EXISTS timeslots;
-
--- 6. Drop Classrooms
--- Depends on: schools
-DROP TABLE IF EXISTS classrooms;
-
--- 7. Drop Courses
--- Depends on: schools, teachers
-DROP TABLE IF EXISTS courses;
-
--- 8. Drop Students
--- Depends on: schools
-DROP TABLE IF EXISTS students;
-
--- 9. Drop Teachers
--- Depends on: schools
-DROP TABLE IF EXISTS teachers;
-
--- 10. Drop Schools (The Root Entity)
-DROP TABLE IF EXISTS schools;
-
--- Note: Postgres implicitly drops indexes associated with tables.
--- If you created standalone indexes on system tables (not the case here), 
--- they would be dropped here.
-
+-- 5. Finalize
 COMMIT;
 -- ============================================================================
 -- END OF REVERSAL

@@ -10,7 +10,7 @@ type RoomType string
 const (
 	Regular RoomType = "Regular"
 	Lab     RoomType = "Lab"
-	GYM     RoomType = "GYM"
+	Gym     RoomType = "Gym"
 )
 
 type Room struct {

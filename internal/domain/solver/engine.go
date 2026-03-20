@@ -68,9 +68,9 @@ func Schedule() {
 		rng,
 		initial,
 		rooms,
-		800.0,  // initial temperature
-		0.997,  // cooling rate
-		20_000, // iterations
+		850.0,   // initial temperature
+		0.998,   // cooling rate
+		100_000, // iterations
 	)
 
 	// TODO: Save assignments
