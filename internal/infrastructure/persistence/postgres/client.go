@@ -1,5 +1,8 @@
 // Package postgres provides a Postgres client for database operations.
-// It initializes the client with the provided configuration and ensures a successful connection to the Postgres server. If the connection fails, it logs the error using the internal logger and returns the error for further handling.
+// It initializes the client with the provided configuration
+// and ensures a successful connection to the Postgres server.
+// If the connection fails, it logs the error using the internal logger
+// and returns the error for further handling.
 package postgres
 
 import (

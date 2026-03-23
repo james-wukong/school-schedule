@@ -28,7 +28,7 @@ caches:
     host: "redis_container"
     port: 6379
     password: ""
-    db: 1
+    db: 3
     expires: 7
 
 # jwt config section
