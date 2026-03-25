@@ -13,7 +13,7 @@ import (
 // subject, and class combination (e.g., Teacher A must teach Math to Class 10B 3 times a week).
 type Requirements struct {
 	// Identity column starting at 1000
-	ID int64 `gorm:"primaryKey;column:id;default:nextval('requirements_id_seq')" json:"id"`
+	ID int64 `gorm:"primaryKey;column:id;default:nextval('requirements_id_seq');<-:false" json:"id"`
 
 	// Foreign Keys with Composite Unique Index
 	// UNIQUE(subject_id, teacher_id, class_id)

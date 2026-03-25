@@ -20,7 +20,7 @@ const (
 // It uses GORM tags to handle identity columns and automatic timestamps.
 type Rooms struct {
 	// ID uses the Postgres IDENTITY sequence. default:nextval handles the START WITH 1000 logic.
-	ID int64 `gorm:"primaryKey;column:id;default:nextval('rooms_id_seq')" json:"id"`
+	ID int64 `gorm:"primaryKey;column:id;default:nextval('rooms_id_seq');<-:false" json:"id"`
 
 	// Foreign Key to School
 	SchoolID int64           `gorm:"column:school_id;not null;uniqueIndex:idx_rooms_school_code" json:"school_id"`

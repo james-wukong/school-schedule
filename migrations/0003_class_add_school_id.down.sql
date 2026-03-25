@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE classes 
+	DROP COLUMN school_id;
+
+COMMIT;

@@ -11,7 +11,7 @@ import (
 // It uses GORM tags to handle identity columns and automatic timestamps.
 type RoomTimeslots struct {
 	// Primary Key composition
-	RoomID     int64 `gorm:"primaryKey;column:room_id;not null" json:"room_id"`
+	RoomID     int64 `gorm:"primaryKey;column:room_id;not null;<-:false" json:"room_id"`
 	TimeslotID int64 `gorm:"primaryKey;column:timeslot_id;not null" json:"timeslot_id"`
 
 	// Relationships (Belongs To)

@@ -25,7 +25,7 @@ const (
 // It maps a specific schedule to a physical room and a specific time.
 type Schedules struct {
 	// Identity column starting at 1000
-	ID int64 `gorm:"primaryKey;column:id;default:nextval('schedules_id_seq')" json:"id"`
+	ID int64 `gorm:"primaryKey;column:id;default:nextval('schedules_id_seq');<-:false" json:"id"`
 
 	// Foreign Keys
 	SchoolID      int64 `gorm:"column:school_id;not null;uniqueIndex:idx_sch_room_time;uniqueIndex:idx_sch_req_time;index:idx_schedules_school" json:"school_id"`

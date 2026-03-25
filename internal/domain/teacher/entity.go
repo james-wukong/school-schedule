@@ -13,7 +13,7 @@ import (
 // It uses GORM tags to handle identity columns and automatic timestamps.
 type Teachers struct {
 	// Primary Key with Identity configuration (START WITH 1000)
-	ID int64 `gorm:"primaryKey;autoIncrement:true;autoIncrementIncrement:1" json:"id"`
+	ID int64 `gorm:"primaryKey;autoIncrement:true;autoIncrementIncrement:1;<-:false" json:"id"`
 
 	// Foreign Key to Schools
 	SchoolID int64 `gorm:"not null;index:idx_teachers_school;uniqueIndex:idx_teacher_emp_unique" json:"school_id"`

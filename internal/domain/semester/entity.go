@@ -45,7 +45,7 @@ type SemesterFilterEntity struct {
 	Limit    int
 }
 
-func Newsemesters(schoolID int64,
+func NewSemesters(schoolID int64,
 	year, semester int,
 ) *Semesters {
 	return &Semesters{

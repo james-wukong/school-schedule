@@ -1,0 +1,11 @@
+BEGIN;
+
+ALTER TABLE classes 
+	ADD COLUMN school_id BIGINT REFERENCES schools(id) ON DELETE CASCADE;
+
+UPDATE classes SET school_id = 1000;
+
+ALTER TABLE classes 
+	ALTER COLUMN school_id SET NOT NULL;
+
+COMMIT;
