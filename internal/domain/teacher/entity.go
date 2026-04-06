@@ -28,8 +28,8 @@ type Teachers struct {
 	Email *string `gorm:"type:varchar(100);index:idx_teachers_email" json:"email"`
 	Phone *string `gorm:"type:varchar(20)" json:"phone"`
 
-	HireDate       time.Time `gorm:"type:date;not null" json:"hire_date"`
-	EmploymentType string    `gorm:"type:varchar(50)" json:"employment_type"` // 'Full-time', 'Part-time', 'Contract'
+	HireDate       *time.Time `gorm:"type:date;default:CURRENT_DATE" json:"hire_date"`
+	EmploymentType string     `gorm:"type:varchar(50)" json:"employment_type"` // 'Full-time', 'Part-time', 'Contract'
 
 	MaxClassesPerDay int  `gorm:"default:5" json:"max_classes_per_day"`
 	IsActive         bool `gorm:"not null;default:true;index:idx_teachers_active" json:"is_active"`
@@ -46,7 +46,7 @@ type Teachers struct {
 	// joinForeignKey: Column in Join Table for Source -> teacher_subjects.teacher_id
 	// references: Primary Key of "Target" -> Subjects.ID
 	// joinReferences: Column in Join Table for Target -> teacher_subjects.subject_id
-	Subjects []subject.Subjects `gorm:"many2many:teacher_subjects;foreignKey:ID;joinForeignKey:TeacherID;References:ID;joinReferences:SubjectID;constraint:OnDelete:CASCADE;" json:"subjects,omitempty"`
+	Subjects []*subject.Subjects `gorm:"many2many:teacher_subjects;foreignKey:ID;joinForeignKey:TeacherID;References:ID;joinReferences:SubjectID;constraint:OnDelete:CASCADE;" json:"subjects,omitempty"`
 
 	// Belongs To School
 	School *school.Schools `gorm:"foreignKey:SchoolID;constraint:OnDelete:CASCADE;" json:"school,omitempty"`

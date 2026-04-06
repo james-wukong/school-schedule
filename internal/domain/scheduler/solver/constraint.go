@@ -93,7 +93,7 @@ func SoftViolations(assignments []*model.Assignment) float64 {
 		}
 
 		// 2. Preferred Day in requirements is not met
-		if slices.Contains(a.Requirement.PreferredDays, a.Slot.Day) {
+		if !slices.Contains(a.Requirement.PreferredDays, a.Slot.Day) {
 			penalty += 2.0
 		}
 	}

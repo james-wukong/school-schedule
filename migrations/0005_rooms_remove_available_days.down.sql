@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE rooms 
+ADD COLUMN available_days VARCHAR(50);
+
+COMMIT;
