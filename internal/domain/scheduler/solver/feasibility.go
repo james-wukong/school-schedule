@@ -12,7 +12,11 @@ import (
 
 // FeasibilityCheck performs a quick check to identify any obvious issues
 // before we dive into the full scheduling algorithm.
-func FeasibilityCheck(requirements []*model.Requirement, rooms []*model.Room) []*model.Issue {
+func FeasibilityCheck(
+	requirements []*model.Requirement, rooms []*model.Room,
+	slots []model.TimeSlot,
+	exlucdeRooms bool,
+) []*model.Issue {
 	var issues []*model.Issue
 
 	// Count total sessions per teacher
@@ -26,7 +30,7 @@ func FeasibilityCheck(requirements []*model.Requirement, rooms []*model.Room) []
 	for tID, load := range teacherLoad {
 		teacher := teacherRef[tID]
 		avail := 0
-		for _, s := range model.AllTimeSlots() {
+		for _, s := range slots {
 			if isTeacherAvailable(teacher, s) {
 				avail++
 			}
@@ -40,21 +44,23 @@ func FeasibilityCheck(requirements []*model.Requirement, rooms []*model.Room) []
 	}
 
 	// Check suitable rooms exist for each requirement
-	for _, req := range requirements {
-		neededLab := req.Subject.RequiresLab
-		found := false
-		for _, room := range rooms {
-			if room.Capacity >= req.SchoolClass.StudentCount {
-				if !neededLab || room.Type == model.Lab {
-					found = true
-					break
+	if !exlucdeRooms {
+		for _, req := range requirements {
+			neededLab := req.Subject.RequiresLab
+			found := false
+			for _, room := range rooms {
+				if room.Capacity >= req.SchoolClass.StudentCount {
+					if !neededLab || room.Type == model.Lab {
+						found = true
+						break
+					}
 				}
 			}
-		}
-		if !found {
-			issues = append(issues, &model.Issue{Description: fmt.Sprintf(
-				"No suitable room for %s-%s / %s (requiresLab=%v)",
-				req.SchoolClass.Grade, req.SchoolClass.Class, req.Subject.Name, neededLab)})
+			if !found {
+				issues = append(issues, &model.Issue{Description: fmt.Sprintf(
+					"No suitable room for %s-%s / %s (requiresLab=%v)",
+					req.SchoolClass.Grade, req.SchoolClass.Class, req.Subject.Name, neededLab)})
+			}
 		}
 	}
 

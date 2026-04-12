@@ -2,7 +2,11 @@
 // It represents how data looks in the database or business rules.
 package subject
 
-import "github.com/james-wukong/school-schedule/internal/domain/school"
+import (
+	"github.com/james-wukong/school-schedule/internal/domain/school"
+
+	solver "github.com/james-wukong/school-schedule/internal/domain/scheduler/model"
+)
 
 // Subjects represents the subjects table in PostgreSQL.
 // It uses GORM tags to handle identity columns and automatic timestamps.
@@ -41,5 +45,14 @@ func NewSubjects(schoolID int64,
 		Code:        code,
 		RequiresLab: requiresLab,
 		IsHeavy:     isHeavy,
+	}
+}
+
+func (m *Subjects) ToSolverModel() *solver.Subject {
+	return &solver.Subject{
+		ID:          solver.SubjectID(m.ID),
+		Name:        m.Name,
+		RequiresLab: m.RequiresLab,
+		IsHeavy:     m.IsHeavy,
 	}
 }

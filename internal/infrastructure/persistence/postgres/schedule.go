@@ -61,7 +61,7 @@ func (r *scheduleRepository) GetBySchoolID(
 		Preload("Room").
 		Preload("School").
 		Preload("Timeslot").
-		Find(&rows, "school_id = ", schoolID).
+		Find(&rows, "school_id = ?", schoolID).
 		Error
 	if err != nil {
 		return nil, err

@@ -1,4 +1,4 @@
-package postgres
+package postgres_test
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/james-wukong/school-schedule/internal/domain/school"
+	infraPostgre "github.com/james-wukong/school-schedule/internal/infrastructure/persistence/postgres"
 	"github.com/rs/zerolog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -54,7 +55,7 @@ func newLogger() *zerolog.Logger {
 func newSchoolRepo(t *testing.T) (school.Repository, sqlmock.Sqlmock) {
 	t.Helper()
 	gormDB, mock := setupMockDB(t)
-	repo := NewSchoolRepository(gormDB, newLogger())
+	repo := infraPostgre.NewSchoolRepository(gormDB, newLogger())
 	return repo, mock
 }
 

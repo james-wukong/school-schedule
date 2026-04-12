@@ -1,4 +1,4 @@
-package postgres
+package postgres_test
 
 import (
 	"context"
@@ -9,6 +9,8 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/james-wukong/school-schedule/internal/domain/timeslot"
+	infraPostgre "github.com/james-wukong/school-schedule/internal/infrastructure/persistence/postgres"
+	"github.com/james-wukong/school-schedule/internal/types"
 	"gorm.io/gorm"
 
 	"github.com/stretchr/testify/assert"
@@ -20,7 +22,7 @@ import (
 func newTimeslotRepo(t *testing.T) (timeslot.Repository, sqlmock.Sqlmock) {
 	t.Helper()
 	gormDB, mock := setupMockDB(t)
-	repo := NewTimeslotRepository(gormDB, newLogger())
+	repo := infraPostgre.NewTimeslotRepository(gormDB, newLogger())
 	return repo, mock
 }
 
@@ -44,8 +46,8 @@ func sampleTimeslot() *timeslot.Timeslots {
 		ID:         200,
 		SemesterID: 100,
 		DayOfWeek:  1,
-		StartTime:  start,
-		EndTime:    end,
+		StartTime:  types.ClockTime(start),
+		EndTime:    types.ClockTime(end),
 	}
 }
 
@@ -56,8 +58,8 @@ func sampleTimeslot1() *timeslot.Timeslots {
 		ID:         201,
 		SemesterID: 100,
 		DayOfWeek:  2,
-		StartTime:  start,
-		EndTime:    end,
+		StartTime:  types.ClockTime(start),
+		EndTime:    types.ClockTime(end),
 	}
 }
 
@@ -127,18 +129,18 @@ func TestTimeslotGetByID_FoundWithPreload(t *testing.T) {
 
 	// EXPECTATION 1: The primary Timeslot query
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "timeslots" WHERE id = $1`)).
-		WithArgs(int64(s.ID), 1).
+		WithArgs(s.ID, 1).
 		WillReturnRows(mockTimeslotRow(mock, s))
 
 		// EXPECTATION 2. Nested Level 1: Semesters (GORM uses IN clause for preloads)
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "semesters" WHERE "semesters"."id" = $1`)).
-		WithArgs(int64(sem.ID)).
+		WithArgs(sem.ID).
 		WillReturnRows(mockSemesterRow(mock, sem))
 
 	// EXPECTATION 3: The automatic Preload query for the School
 	// GORM uses an "IN" clause for preloading, even for single items.
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "schools" WHERE `)).
-		WithArgs(int64(sch.ID)).
+		WithArgs(sch.ID).
 		WillReturnRows(mockSchoolRow(mock, sch))
 
 	result, err := repo.GetByID(ctx, s.ID)
@@ -196,18 +198,18 @@ func TestTimeslotGetBySemesterID_FoundWithPreload(t *testing.T) {
 
 	// EXPECTATION 1: The primary Timeslot query
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "timeslots" WHERE school_id = `)).
-		WithArgs(int64(s.ID)).
+		WithArgs(s.ID).
 		WillReturnRows(mockTimeslotRow(mock, s))
 
 		// EXPECTATION 2. Nested Level 1: Semesters (GORM uses IN clause for preloads)
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "semesters" WHERE `)).
-		WithArgs(int64(sem.ID)).
+		WithArgs(sem.ID).
 		WillReturnRows(mockSemesterRow(mock, sem))
 
 	// EXPECTATION 3: The automatic Preload query for the School
 	// GORM uses an "IN" clause for preloading, even for single items.
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "schools" WHERE `)).
-		WithArgs(int64(sch.ID)).
+		WithArgs(sch.ID).
 		WillReturnRows(mockSchoolRow(mock, sch))
 
 	result, err := repo.GetBySemesterID(ctx, s.SemesterID)
@@ -392,7 +394,7 @@ func TestTimeslotList_FilterByStartTime(t *testing.T) {
 	s := sampleTimeslot()
 
 	filter := baseTimeslotFilter()
-	filter.StartTime = ptr(s.StartTime)
+	filter.StartTime = ptr(time.Time(s.StartTime))
 
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "timeslots" WHERE start_time = $1`)).
 		WithArgs(s.StartTime, filter.Limit).
@@ -412,7 +414,7 @@ func TestTimeslotList_CombinedFilters(t *testing.T) {
 
 	filter := baseTimeslotFilter()
 	filter.DayOfWeek = ptr(1)
-	filter.StartTime = ptr(s.StartTime)
+	filter.StartTime = ptr(time.Time(s.StartTime))
 
 	// mock.ExpectQuery(`SELECT \* FROM "timeslots" WHERE`).
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "timeslots" WHERE`)).
@@ -431,8 +433,8 @@ func TestTimeslotList_EmptyStringFiltersIgnored(t *testing.T) {
 	s := sampleTimeslot()
 
 	filter := baseTimeslotFilter()
-	filter.DayOfWeek = ptr(0)           // Should not be skipped
-	filter.StartTime = ptr(s.StartTime) // Should not be skipped
+	filter.DayOfWeek = ptr(0)                      // Should not be skipped
+	filter.StartTime = ptr(time.Time(s.StartTime)) // Should not be skipped
 
 	// Expect a plain SELECT without any WHERE conditions
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "timeslots"`)).

@@ -37,9 +37,12 @@ func randomNeighbour(
 	rng *rand.Rand,
 	assignments []*model.Assignment,
 	rooms []*model.Room,
+	slots []model.TimeSlot,
+	excludeRooms bool,
 ) []*model.Assignment {
 	neighbour := copyAssignments(assignments)
-	AllSlots := model.AllTimeSlots()
+	// TODO ADD THIS
+	AllSlots := slots
 	n := len(neighbour)
 	if n == 0 {
 		return neighbour
@@ -63,11 +66,13 @@ func randomNeighbour(
 		neighbour[i].Slot = AllSlots[rng.IntN(len(AllSlots))]
 
 	case 2: // Change room of one assignment
-		i := rng.IntN(n)
-		a := neighbour[i]
-		suitable := suitableRooms(a.Requirement, rooms)
-		if len(suitable) > 0 {
-			neighbour[i].Room = suitable[rng.IntN(len(suitable))]
+		if !excludeRooms {
+			i := rng.IntN(n)
+			a := neighbour[i]
+			suitable := suitableRooms(a.Requirement, rooms)
+			if len(suitable) > 0 {
+				neighbour[i].Room = suitable[rng.IntN(len(suitable))]
+			}
 		}
 	}
 
@@ -78,25 +83,27 @@ func SimulatedAnnealing(
 	rng *rand.Rand,
 	initial []*model.Assignment,
 	rooms []*model.Room,
+	slots []model.TimeSlot,
+	excludeRooms bool,
 	initialTemp float64,
 	coolingRate float64,
 	iterations int,
 ) []*model.Assignment {
 	current := copyAssignments(initial)
-	currentCost := TotalCost(current)
+	currentCost := TotalCost(current, excludeRooms)
 	best := copyAssignments(current)
 	bestCost := currentCost
 	temp := initialTemp
 
 	fmt.Printf("\n=== Phase 3: Simulated Annealing (iterations=%d) ===\n", iterations)
 	fmt.Printf("  Initial cost : %.1f  (hard=%d, soft=%.1f)\n",
-		currentCost, HardViolations(current), SoftViolations(current))
+		currentCost, HardViolations(current, excludeRooms), SoftViolations(current))
 
 	logInterval := iterations / 10
 
 	for it := 1; it <= iterations; it++ {
-		neighbour := randomNeighbour(rng, current, rooms)
-		nCost := TotalCost(neighbour)
+		neighbour := randomNeighbour(rng, current, rooms, slots, excludeRooms)
+		nCost := TotalCost(neighbour, excludeRooms)
 		delta := nCost - currentCost
 
 		if delta < 0 || rng.Float64() < math.Exp(-delta/math.Max(temp, 1e-9)) {
@@ -119,7 +126,7 @@ func SimulatedAnnealing(
 	}
 
 	fmt.Printf("\n  Final cost   : %.1f  (hard=%d, soft=%.1f)\n",
-		bestCost, HardViolations(best), SoftViolations(best))
+		bestCost, HardViolations(best, excludeRooms), SoftViolations(best))
 
 	return best
 }

@@ -1,17 +1,21 @@
-package model
+package model_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/james-wukong/school-schedule/internal/domain/scheduler/model"
+)
 
 func TestClassroom_CanFit(t *testing.T) {
 	tests := []struct {
-		classroom Room
+		classroom model.Room
 		name      string
 		size      int
 		want      bool
 	}{
 		{
 			name: "fits exactly",
-			classroom: Room{
+			classroom: model.Room{
 				Capacity: 30,
 			},
 			size: 30,
@@ -19,7 +23,7 @@ func TestClassroom_CanFit(t *testing.T) {
 		},
 		{
 			name: "fits smaller",
-			classroom: Room{
+			classroom: model.Room{
 				Capacity: 30,
 			},
 			size: 20,
@@ -27,7 +31,7 @@ func TestClassroom_CanFit(t *testing.T) {
 		},
 		{
 			name: "does not fit larger",
-			classroom: Room{
+			classroom: model.Room{
 				Capacity: 30,
 			},
 			size: 40,

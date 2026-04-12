@@ -26,6 +26,12 @@ type ClassDaySubjectKey struct {
 	Day     DayOfWeek
 }
 
+type ClassSubjectKey struct {
+	ClassID   ClassID
+	SubjectID SubjectID
+	MinDayGap int
+}
+
 func NewSchoolClass(entity SchoolClass) *SchoolClass {
 	s := &entity
 

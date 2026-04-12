@@ -1,23 +1,27 @@
-package model
+package model_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/james-wukong/school-schedule/internal/domain/scheduler/model"
+)
 
 func TestConstraint_IsSoft(t *testing.T) {
 	tests := []struct {
 		name       string
-		constraint Constraint
+		constraint model.Constraint
 		want       bool
 	}{
 		{
 			name: "soft constraint",
-			constraint: Constraint{
+			constraint: model.Constraint{
 				IsHard: false,
 			},
 			want: true,
 		},
 		{
 			name: "hard constraint",
-			constraint: Constraint{
+			constraint: model.Constraint{
 				IsHard: true,
 			},
 			want: false,

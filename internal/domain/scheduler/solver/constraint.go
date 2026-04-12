@@ -12,17 +12,22 @@ import (
 )
 
 // BuildConflictIndex creates conflict index
-func BuildConflictIndex(assignments []*model.Assignment) (*model.ConflictIndex, int) {
+func BuildConflictIndex(
+	assignments []*model.Assignment, excludeRooms bool,
+) (*model.ConflictIndex, int) {
 	idx := model.NewConflictIndex()
 	count := 0
 	for _, a := range assignments {
 		tk := model.ConflictKey(a.Requirement.Teacher.ID, a.Slot)
 		ck := model.ConflictKey(a.Requirement.SchoolClass.ID, a.Slot)
-		rk := model.ConflictKey(a.Room.ID, a.Slot)
 
 		idx.TeacherSlot[tk] = append(idx.TeacherSlot[tk], a)
 		idx.ClassSlot[ck] = append(idx.ClassSlot[ck], a)
-		idx.RoomSlot[rk] = append(idx.RoomSlot[rk], a)
+
+		if !excludeRooms {
+			rk := model.ConflictKey(a.Room.ID, a.Slot)
+			idx.RoomSlot[rk] = append(idx.RoomSlot[rk], a)
+		}
 		// A teacher can only teach subjects they're qualified for
 		if !slices.Contains(a.Requirement.Teacher.Subjects, a.Requirement.Subject.ID) {
 			count++
@@ -37,8 +42,8 @@ func BuildConflictIndex(assignments []*model.Assignment) (*model.ConflictIndex, 
 // A class can't have two lessons simultaneously
 // A room can't host two classes at the same time
 // A teacher can only teach subjects they're qualified for
-func HardViolations(assignments []*model.Assignment) int {
-	idx, unqualified := BuildConflictIndex(assignments)
+func HardViolations(assignments []*model.Assignment, excludeRooms bool) int {
+	idx, unqualified := BuildConflictIndex(assignments, excludeRooms)
 	count := 0
 	for _, lst := range idx.TeacherSlot {
 		if len(lst) > 1 {
@@ -50,9 +55,11 @@ func HardViolations(assignments []*model.Assignment) int {
 			count += len(lst) - 1
 		}
 	}
-	for _, lst := range idx.RoomSlot {
-		if len(lst) > 1 {
-			count += len(lst) - 1
+	if !excludeRooms {
+		for _, lst := range idx.RoomSlot {
+			if len(lst) > 1 {
+				count += len(lst) - 1
+			}
 		}
 	}
 	return count + unqualified
@@ -68,6 +75,7 @@ func SoftViolations(assignments []*model.Assignment) float64 {
 
 	teacherAssignedSlots := make(map[model.TeacherDaySlotsKey][]string, 0)
 	nonheavyDaySubjects := make(map[model.ClassDaySubjectKey][]model.SubjectID, 0)
+	classSubjects := make(map[model.ClassSubjectKey][]model.DayOfWeek, 0)
 
 	for _, a := range assignments {
 		tk := model.TeacherDaySlotsKey{
@@ -83,18 +91,27 @@ func SoftViolations(assignments []*model.Assignment) float64 {
 		if !a.Requirement.Subject.IsHeavy {
 			nonheavyDaySubjects[ck] = append(nonheavyDaySubjects[ck], a.Requirement.Subject.ID)
 		}
+
+		csk := model.ClassSubjectKey{
+			ClassID:   a.Requirement.SchoolClass.ID,
+			SubjectID: a.Requirement.Subject.ID,
+			MinDayGap: a.Requirement.MinDayGap,
+		}
+		if !slices.Contains(classSubjects[csk], a.Slot.Day) {
+			classSubjects[csk] = append(classSubjects[csk], a.Slot.Day)
+		}
 		// 1. Heavy subjects placed in late periods (P6+)
-		isAfter, err := isTimeAfter(a.Slot.StartTime, "14:00")
+		isAfter, err := isTimeAfter(a.Slot.StartTime, "13:59")
 		if err != nil {
 			fmt.Printf("error caught transiting string to time: %v\n", err)
 		}
-		if a.Requirement.Subject.IsHeavy && isAfter {
-			penalty += 1.0
+		if !a.Requirement.Subject.IsHeavy && !isAfter {
+			penalty += 10.0
 		}
 
 		// 2. Preferred Day in requirements is not met
-		if !slices.Contains(a.Requirement.PreferredDays, a.Slot.Day) {
-			penalty += 2.0
+		if slices.Contains(a.Requirement.PreferredDays, a.Slot.Day) {
+			penalty -= 1.0
 		}
 	}
 
@@ -103,7 +120,7 @@ func SoftViolations(assignments []*model.Assignment) float64 {
 		slices.Sort(slots)
 		for i := 1; i < len(slots); i++ {
 			if minuteDifference(slots[i], slots[i-1]) > 10 {
-				penalty += 3.0
+				penalty += 1.0
 			}
 		}
 	}
@@ -113,16 +130,27 @@ func SoftViolations(assignments []*model.Assignment) float64 {
 		slices.Sort(subjects)
 		for k, v := range subjects {
 			if k >= 1 && subjects[k-1] == v {
-				penalty += 5.0
+				penalty += 2.0
 			}
 		}
 	}
 
+	// 4. Min day gap must be applied
+	for classSubjectKey, days := range classSubjects {
+		if classSubjectKey.MinDayGap != 0 && len(days) != 0 {
+			slices.Sort(days)
+			for i := range days {
+				if i > 1 && int(days[i]-days[i-1]) < classSubjectKey.MinDayGap {
+					penalty += 5.0
+				}
+			}
+		}
+	}
 	return penalty
 }
 
 const hardWeight = 1000.0
 
-func TotalCost(assignments []*model.Assignment) float64 {
-	return hardWeight*float64(HardViolations(assignments)) + SoftViolations(assignments)
+func TotalCost(assignments []*model.Assignment, excludeRooms bool) float64 {
+	return hardWeight*float64(HardViolations(assignments, excludeRooms)) + SoftViolations(assignments)
 }

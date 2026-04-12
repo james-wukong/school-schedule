@@ -67,7 +67,7 @@ type OtpConfig struct {
 }
 
 func InitConfig() *Config {
-	viper.SetConfigName("conf") // Name of your file (config.yaml)
+	viper.SetConfigName("config") // Name of your file (config.yaml)
 	viper.SetConfigType("yml")
 	viper.AddConfigPath(".") // Look in the current directory (project folder)
 

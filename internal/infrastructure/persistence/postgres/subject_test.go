@@ -1,4 +1,4 @@
-package postgres
+package postgres_test
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/james-wukong/school-schedule/internal/domain/subject"
+	infraPostgre "github.com/james-wukong/school-schedule/internal/infrastructure/persistence/postgres"
 	"gorm.io/gorm"
 
 	"github.com/stretchr/testify/assert"
@@ -19,7 +20,7 @@ import (
 func newSubjectRepo(t *testing.T) (subject.Repository, sqlmock.Sqlmock) {
 	t.Helper()
 	gormDB, mock := setupMockDB(t)
-	repo := NewSubjectRepository(gormDB, newLogger())
+	repo := infraPostgre.NewSubjectRepository(gormDB, newLogger())
 	return repo, mock
 }
 

@@ -81,3 +81,20 @@ func isTimeAfter(t, benchmark string) (bool, error) {
 	}
 	return t1.After(t2), nil
 }
+
+func ToTimeslots(ts map[model.DayOfWeek][]string) []model.TimeSlot {
+	var timeslots []model.TimeSlot
+	for key, value := range ts {
+		for _, slot := range value {
+			timeslots = append(timeslots, model.TimeSlot{
+				StartTime: slot,
+				Day:       key,
+			})
+		}
+	}
+	return timeslots
+}
+
+func SampleHeader(ts map[model.DayOfWeek][]string) []string {
+	return ts[model.Monday]
+}

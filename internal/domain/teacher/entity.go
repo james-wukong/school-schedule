@@ -3,10 +3,14 @@
 package teacher
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
+	solver "github.com/james-wukong/school-schedule/internal/domain/scheduler/model"
 	"github.com/james-wukong/school-schedule/internal/domain/school"
 	"github.com/james-wukong/school-schedule/internal/domain/subject"
+	"github.com/james-wukong/school-schedule/internal/domain/timeslot"
 )
 
 // Teachers represents the teachers table in PostgreSQL.
@@ -46,7 +50,8 @@ type Teachers struct {
 	// joinForeignKey: Column in Join Table for Source -> teacher_subjects.teacher_id
 	// references: Primary Key of "Target" -> Subjects.ID
 	// joinReferences: Column in Join Table for Target -> teacher_subjects.subject_id
-	Subjects []*subject.Subjects `gorm:"many2many:teacher_subjects;foreignKey:ID;joinForeignKey:TeacherID;References:ID;joinReferences:SubjectID;constraint:OnDelete:CASCADE;" json:"subjects,omitempty"`
+	Subjects  []*subject.Subjects   `gorm:"many2many:teacher_subjects;foreignKey:ID;joinForeignKey:TeacherID;References:ID;joinReferences:SubjectID;constraint:OnDelete:CASCADE;" json:"subjects,omitempty"`
+	Timeslots []*timeslot.Timeslots `gorm:"many2many:teacher_timeslots;foreignKey:ID;joinForeignKey:TeacherID;References:ID;joinReferences:TimeslotID;constraint:OnDelete:CASCADE;" json:"timeslots,omitempty"`
 
 	// Belongs To School
 	School *school.Schools `gorm:"foreignKey:SchoolID;constraint:OnDelete:CASCADE;" json:"school,omitempty"`
@@ -75,4 +80,21 @@ func NewTeachers(schoolID, employeeID int64,
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 	}
+}
+
+func (m *Teachers) ToSolverModel() (*solver.Teacher, error) {
+	var subIDs []solver.SubjectID
+	if len(m.Subjects) == 0 {
+		return nil, errors.New("no subject assigned to this teacher")
+	}
+	for _, subject := range m.Subjects {
+		subIDs = append(subIDs, solver.SubjectID(subject.ID))
+	}
+	return &solver.Teacher{
+		ID:               solver.TeacherID(m.ID),
+		TenantID:         int(m.SchoolID),
+		Name:             fmt.Sprintf("%s-%s", m.LastName, m.FirstName),
+		Subjects:         subIDs,
+		MaxClassesPerDay: m.MaxClassesPerDay,
+	}, nil
 }

@@ -5,6 +5,7 @@ package room
 import (
 	"time"
 
+	solver "github.com/james-wukong/school-schedule/internal/domain/scheduler/model"
 	"github.com/james-wukong/school-schedule/internal/domain/school"
 )
 
@@ -58,5 +59,15 @@ func NewRoom(schoolID int64,
 		RoomType: roomType,
 		Capacity: capacity,
 		IsActive: isActive,
+	}
+}
+
+func (m *Rooms) ToSolverModel() *solver.Room {
+	return &solver.Room{
+		ID:       solver.RoomID(m.ID),
+		TenantID: int(m.SchoolID),
+		Name:     m.Name,
+		Capacity: m.Capacity,
+		Type:     solver.RoomType(m.RoomType),
 	}
 }

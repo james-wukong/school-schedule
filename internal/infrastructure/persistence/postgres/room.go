@@ -54,7 +54,7 @@ func (r *roomRepository) GetBySchoolID(
 	var rows []*room.Rooms
 	err := r.db.WithContext(ctx).
 		Preload("School").
-		Find(&rows, "school_id = ", schoolID).
+		Find(&rows, "school_id = ?", schoolID).
 		Error
 	if err != nil {
 		return nil, err

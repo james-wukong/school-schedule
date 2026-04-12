@@ -49,12 +49,12 @@ func (r *timeslotRepository) GetByID(ctx context.Context, id int64) (*timeslot.T
 // Implement GetBySchoolID method
 func (r *timeslotRepository) GetBySemesterID(
 	ctx context.Context,
-	schoolID int64,
+	semesterID int64,
 ) ([]*timeslot.Timeslots, error) {
 	var rows []*timeslot.Timeslots
 	err := r.db.WithContext(ctx).
 		Preload("Semester.School").
-		Find(&rows, "school_id = ", schoolID).
+		Find(&rows, "semester_id = ?", semesterID).
 		Error
 	if err != nil {
 		return nil, err

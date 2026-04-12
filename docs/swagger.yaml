@@ -1,0 +1,63 @@
+basePath: /api/v1
+definitions:
+  dto.CreateScheduleRequest:
+    properties:
+      excludeRooms:
+        type: boolean
+      schoolID:
+        format: int64
+        type: integer
+      semesterID:
+        format: int64
+        type: integer
+      version:
+        format: float64
+        type: number
+    type: object
+  dto.CreateScheduleResponse:
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8092
+info:
+  contact: {}
+  description: 'link: http://127.0.0.1:8092/swagger/index.html'
+  title: Your API Title
+  version: "1.0"
+paths:
+  /schedule/create:
+    post:
+      consumes:
+      - application/json
+      description: create a schedule
+      parameters:
+      - description: User Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateScheduleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateScheduleResponse'
+        "400":
+          description: '{''error'':''error message''}'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: '{''error'':''error message''}'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create
+      tags:
+      - create schedule
+schemes:
+- http
+swagger: "2.0"

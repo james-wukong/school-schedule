@@ -1,0 +1,93 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "link: http://127.0.0.1:8092/swagger/index.html",
+        "title": "Your API Title",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8092",
+    "basePath": "/api/v1",
+    "paths": {
+        "/schedule/create": {
+            "post": {
+                "description": "create a schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "create schedule"
+                ],
+                "summary": "Create",
+                "parameters": [
+                    {
+                        "description": "User Credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateScheduleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateScheduleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "{'error':'error message'}",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "{'error':'error message'}",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.CreateScheduleRequest": {
+            "type": "object",
+            "properties": {
+                "excludeRooms": {
+                    "type": "boolean"
+                },
+                "schoolID": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "semesterID": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "version": {
+                    "type": "number",
+                    "format": "float64"
+                }
+            }
+        },
+        "dto.CreateScheduleResponse": {
+            "type": "object"
+        }
+    },
+    "externalDocs": {
+        "description": "OpenAPI",
+        "url": "https://swagger.io/resources/open-api/"
+    }
+}

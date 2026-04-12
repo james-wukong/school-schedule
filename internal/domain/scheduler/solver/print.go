@@ -15,7 +15,7 @@ import (
 
 // Renders a day×period grid per class and a chronologically sorted schedule per teacher.
 
-func PrintTimetable(assignments []*model.Assignment) {
+func PrintTimetable(assignments []*model.Assignment, periods []string) {
 	// Collect unique classes
 	classSet := make(map[model.ClassID]*model.SchoolClass)
 	for _, a := range assignments {
@@ -64,7 +64,7 @@ func PrintTimetable(assignments []*model.Assignment) {
 		}
 		fmt.Println()
 		fmt.Println(line)
-		periods := []string{"09:00", "10:00", "11:00", "13:00", "14:00", "15:00"}
+
 		for _, p := range periods {
 			fmt.Printf("%-15s", p)
 			for _, d := range days {
@@ -90,7 +90,7 @@ func PrintTimetable(assignments []*model.Assignment) {
 	fmt.Printf("\n%s\n", sep)
 }
 
-func PrintTeacherSchedules(assignments []*model.Assignment) {
+func PrintTeacherSchedules(assignments []*model.Assignment, excludeRooms bool) {
 	teacherSet := make(map[model.TeacherID]*model.Teacher)
 	for _, a := range assignments {
 		teacherSet[a.Requirement.Teacher.ID] = a.Requirement.Teacher
@@ -137,19 +137,27 @@ func PrintTeacherSchedules(assignments []*model.Assignment) {
 			return cmp.Compare(a.Slot.StartTime, b.Slot.StartTime)
 		})
 		for _, a := range slots {
-			fmt.Printf("    %+v  →  %s-%s | %s | %s\n",
-				a.Slot,
-				a.Requirement.SchoolClass.Grade,
-				a.Requirement.SchoolClass.Class,
-				a.Requirement.Subject.Name,
-				a.Room.Name)
+			if !excludeRooms {
+				fmt.Printf("    %+v  →  %s-%s | %s | %s\n",
+					a.Slot,
+					a.Requirement.SchoolClass.Grade,
+					a.Requirement.SchoolClass.Class,
+					a.Requirement.Subject.Name,
+					a.Room.Name)
+			} else {
+				fmt.Printf("    %+v  →  %s-%s | %s \n",
+					a.Slot,
+					a.Requirement.SchoolClass.Grade,
+					a.Requirement.SchoolClass.Class,
+					a.Requirement.Subject.Name)
+			}
 		}
 	}
 }
 
-func PrintSummary(assignments []*model.Assignment, total int) {
+func PrintSummary(assignments []*model.Assignment, total int, excludeRooms bool) {
 	fmt.Println("\n=== Summary ===")
 	fmt.Printf("  Total assignments : %d / %d\n", len(assignments), total)
-	fmt.Printf("  Hard violations   : %d\n", HardViolations(assignments))
+	fmt.Printf("  Hard violations   : %d\n", HardViolations(assignments, excludeRooms))
 	fmt.Printf("  Soft penalty      : %.1f\n", SoftViolations(assignments))
 }

@@ -54,7 +54,7 @@ func (r *semesterRepository) GetBySchoolID(
 	var rows []*semester.Semesters
 	err := r.db.WithContext(ctx).
 		Preload("School").
-		Find(&rows, "school_id = ", schoolID).
+		Find(&rows, "school_id = ?", schoolID).
 		Error
 	if err != nil {
 		return nil, err

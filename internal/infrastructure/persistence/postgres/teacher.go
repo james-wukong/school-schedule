@@ -37,6 +37,7 @@ func (r *teacherRepository) GetByID(ctx context.Context, id int64) (*teacher.Tea
 	err := r.db.WithContext(ctx).
 		Preload("Subjects").
 		Preload("School").
+		Preload("Timeslots").
 		First(&record, "id = ?", id).
 		Error
 	if err != nil {
@@ -57,7 +58,8 @@ func (r *teacherRepository) GetBySchoolID(
 	err := r.db.WithContext(ctx).
 		Preload("School").
 		Preload("Subjects").
-		Find(&rows, "school_id = ", schoolID).
+		Preload("Timeslots").
+		Find(&rows, "school_id = ?", schoolID).
 		Error
 	if err != nil {
 		return nil, err
@@ -74,6 +76,7 @@ func (r *teacherRepository) GetByEmployeeID(
 	err := r.db.WithContext(ctx).
 		Preload("School").
 		Preload("Subjects").
+		Preload("Timeslots").
 		Find(&rows, "employee_id = ", employeeID).
 		Error
 	if err != nil {
@@ -91,6 +94,7 @@ func (r *teacherRepository) GetByName(
 	err := r.db.WithContext(ctx).
 		Preload("School").
 		Preload("Subjects").
+		Preload("Timeslots").
 		Find(&rows, "LOWER(first_name) LIKE ? and LOWER(last_name) = ?",
 			"%"+strings.ToLower(firstName)+"%",
 			strings.ToLower(lastName)).

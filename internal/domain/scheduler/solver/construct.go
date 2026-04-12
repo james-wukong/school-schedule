@@ -33,6 +33,8 @@ func GreedyConstruct(
 	rng *rand.Rand,
 	requirements []*model.Requirement,
 	rooms []*model.Room,
+	slots []model.TimeSlot,
+	excludeRooms bool,
 ) []*model.Assignment {
 	// Expand requirements into individual sessions
 	var sessions []*model.Requirement
@@ -66,22 +68,25 @@ func GreedyConstruct(
 	roomOccupied := make(map[model.ConflictMapKey[model.RoomID]]bool)
 
 	var assignments []*model.Assignment
-	slotOrder := model.AllTimeSlots()
+	var suitable []*model.Room
+	slotOrder := slots
 
 	for _, req := range sessions {
-		suitable := suitableRooms(req, rooms)
-		if len(suitable) == 0 {
-			// fmt.Printf("  ⚠ No room available for %s-%s / %s\n",
-			// 	req.SchoolClass.Grade, req.SchoolClass.Class, req.Subject.Name)
-			continue
+		if !excludeRooms {
+			suitable = suitableRooms(req, rooms)
+			if len(suitable) == 0 {
+				// fmt.Printf("  ⚠ No room available for %s-%s / %s\n",
+				// 	req.SchoolClass.Grade, req.SchoolClass.Class, req.Subject.Name)
+				continue
+			}
+			rng.Shuffle(len(suitable), func(i, j int) {
+				suitable[i], suitable[j] = suitable[j], suitable[i]
+			})
 		}
 
 		// Shuffle slot & room order for variety
 		rng.Shuffle(len(slotOrder), func(i, j int) {
 			slotOrder[i], slotOrder[j] = slotOrder[j], slotOrder[i]
-		})
-		rng.Shuffle(len(suitable), func(i, j int) {
-			suitable[i], suitable[j] = suitable[j], suitable[i]
 		})
 
 		placed := false
@@ -108,24 +113,32 @@ func GreedyConstruct(
 				continue
 			}
 			// TODO: bind rooms to classes with a switch
-			for _, room := range suitable {
-				rk := model.ConflictMapKey[model.RoomID]{
-					ID:   room.ID,
-					Day:  slot.Day,
-					Slot: slot.StartTime,
+			if !excludeRooms {
+				for _, room := range suitable {
+					rk := model.ConflictMapKey[model.RoomID]{
+						ID:   room.ID,
+						Day:  slot.Day,
+						Slot: slot.StartTime,
+					}
+					if roomOccupied[rk] {
+						// fmt.Printf("  ⚠ Room Occupied %d at %+v\n",
+						// 	room.ID, slot)
+						continue
+					}
+					a := &model.Assignment{Requirement: req, Room: room, Slot: slot}
+					assignments = append(assignments, a)
+					teacherOccupied[tk] = true
+					classOccupied[ck] = true
+					roomOccupied[rk] = true
+					placed = true
+					break
 				}
-				if roomOccupied[rk] {
-					// fmt.Printf("  ⚠ Room Occupied %d at %+v\n",
-					// 	room.ID, slot)
-					continue
-				}
-				a := &model.Assignment{Requirement: req, Room: room, Slot: slot}
+			} else {
+				a := &model.Assignment{Requirement: req, Slot: slot}
 				assignments = append(assignments, a)
 				teacherOccupied[tk] = true
 				classOccupied[ck] = true
-				roomOccupied[rk] = true
 				placed = true
-				break
 			}
 			if placed {
 				break
@@ -140,6 +153,8 @@ func GreedyConstruct(
 			)
 		}
 	}
-
-	return assignments
+	if len(assignments) == len(sessions) {
+		return assignments
+	}
+	return GreedyConstruct(rng, requirements, rooms, slots, excludeRooms)
 }

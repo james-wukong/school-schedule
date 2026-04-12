@@ -3,6 +3,9 @@
 package class
 
 import (
+	"fmt"
+
+	solver "github.com/james-wukong/school-schedule/internal/domain/scheduler/model"
 	"github.com/james-wukong/school-schedule/internal/domain/school"
 	"github.com/james-wukong/school-schedule/internal/domain/semester"
 )
@@ -46,5 +49,15 @@ func NewClass(schoolID, semesterID int64,
 		Grade:        grade,
 		ClassName:    className,
 		StudentCount: studentCount,
+	}
+}
+
+func (m *Classes) ToSolverModel() *solver.SchoolClass {
+	return &solver.SchoolClass{
+		ID:           solver.ClassID(m.ID),
+		TenantID:     int(m.SchoolID),
+		StudentCount: m.StudentCount,
+		Grade:        fmt.Sprint(m.Grade),
+		Class:        m.ClassName,
 	}
 }

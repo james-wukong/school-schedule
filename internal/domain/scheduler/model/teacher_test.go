@@ -1,17 +1,21 @@
-package model
+package model_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/james-wukong/school-schedule/internal/domain/scheduler/model"
+)
 
 func TestTeacher_CanTakeMoreHours(t *testing.T) {
 	tests := []struct {
 		name         string
-		teacher      Teacher
+		teacher      model.Teacher
 		currentHours int
 		want         bool
 	}{
 		{
 			name: "Can take more hours",
-			teacher: Teacher{
+			teacher: model.Teacher{
 				MaxHoursPerWeek: 10,
 			},
 			currentHours: 5,
@@ -19,7 +23,7 @@ func TestTeacher_CanTakeMoreHours(t *testing.T) {
 		},
 		{
 			name: "Can not take more hours",
-			teacher: Teacher{
+			teacher: model.Teacher{
 				MaxHoursPerWeek: 10,
 			},
 			currentHours: 15,
@@ -27,7 +31,7 @@ func TestTeacher_CanTakeMoreHours(t *testing.T) {
 		},
 		{
 			name: "Can nottake more hours",
-			teacher: Teacher{
+			teacher: model.Teacher{
 				MaxHoursPerWeek: 10,
 			},
 			currentHours: 10,
