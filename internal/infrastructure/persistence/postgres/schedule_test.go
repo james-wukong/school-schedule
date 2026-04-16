@@ -41,11 +41,12 @@ func mockScheduleRow(mock sqlmock.Sqlmock, s *schedule.Schedules) *sqlmock.Rows 
 
 // sampleSchedule returns a deterministic Schedules fixture.
 func sampleSchedule() *schedule.Schedules {
+	roomID := int64(3000)
 	return &schedule.Schedules{
 		ID:            10000,
 		SchoolID:      10,
 		RequirementID: 10000,
-		RoomID:        3000,
+		RoomID:        &roomID,
 		TimeslotID:    200,
 		Version:       1.00,
 		Status:        schedule.StatusDraft,
@@ -53,11 +54,12 @@ func sampleSchedule() *schedule.Schedules {
 }
 
 func sampleSchedule1() *schedule.Schedules {
+	roomID := int64(3000)
 	return &schedule.Schedules{
 		ID:            10001,
 		SchoolID:      10,
 		RequirementID: 10000,
-		RoomID:        3000,
+		RoomID:        &roomID,
 		TimeslotID:    201,
 		Version:       1.00,
 		Status:        schedule.StatusDraft,

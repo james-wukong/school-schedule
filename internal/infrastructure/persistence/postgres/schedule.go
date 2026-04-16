@@ -30,6 +30,26 @@ func (r *scheduleRepository) Create(ctx context.Context, entity *schedule.Schedu
 	return nil
 }
 
+func (r *scheduleRepository) CreateInBatches(
+	ctx context.Context, t []*schedule.Schedules,
+) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// remove all rows with same semester id and version number
+		if len(t) == 0 {
+			return nil
+		}
+		if err := tx.Delete(&schedule.Schedules{},
+			"semester_id = ? and version = ?",
+			t[0].SemesterID,
+			t[0].Version,
+		).Error; err != nil {
+			return err
+		}
+		// create schedules
+		return tx.CreateInBatches(t, 100).Error
+	})
+}
+
 // Implement GetByID method
 func (r *scheduleRepository) GetByID(ctx context.Context, id int64) (*schedule.Schedules, error) {
 	var record schedule.Schedules

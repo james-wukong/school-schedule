@@ -5,7 +5,7 @@ import (
 )
 
 type DayOfWeek int
-type TimeSlotID int
+type TimeSlotID int64
 
 const (
 	Monday DayOfWeek = iota + 1
@@ -18,6 +18,7 @@ const (
 )
 
 type TimeSlot struct {
+	ID        TimeSlotID
 	StartTime string // "09:00", "13:00"
 	Day       DayOfWeek
 }

@@ -28,10 +28,11 @@ type Schedules struct {
 	ID int64 `gorm:"primaryKey;column:id;default:nextval('schedules_id_seq');<-:false" json:"id"`
 
 	// Foreign Keys
-	SchoolID      int64 `gorm:"column:school_id;not null;uniqueIndex:idx_sch_room_time;uniqueIndex:idx_sch_req_time;index:idx_schedules_school" json:"school_id"`
-	RequirementID int64 `gorm:"column:requirement_id;not null;uniqueIndex:idx_sch_req_time;index:idx_schedules_requirement" json:"requirement_id"`
-	RoomID        int64 `gorm:"column:room_id;not null;uniqueIndex:idx_sch_room_time;index:idx_schedules_room" json:"room_id"`
-	TimeslotID    int64 `gorm:"column:timeslot_id;not null;uniqueIndex:idx_sch_room_time;uniqueIndex:idx_sch_req_time;index:idx_schedules_timeslot" json:"timeslot_id"`
+	SchoolID      int64  `gorm:"column:school_id;not null;index:idx_schedules_school" json:"school_id"`
+	SemesterID    int64  `gorm:"column:semester_id;not null;uniqueIndex:uq_schedules_room_key;uniqueIndex:uq_schedules_requirement_key;index:idx_schedules_semester" json:"school_id"`
+	RequirementID int64  `gorm:"column:requirement_id;not null;uniqueIndex:uq_schedules_requirement_key;index:idx_schedules_requirement" json:"requirement_id"`
+	RoomID        *int64 `gorm:"column:room_id;default:null;uniqueIndex:uq_schedules_room_key;index:idx_schedules_room" json:"room_id"`
+	TimeslotID    int64  `gorm:"column:timeslot_id;not null;uniqueIndex:uq_schedules_room_key;uniqueIndex:uq_schedules_requirement_key;index:idx_schedules_timeslot" json:"timeslot_id"`
 
 	// Relationships (Belongs To)
 	School      *school.Schools           `gorm:"foreignKey:SchoolID;constraint:OnDelete:CASCADE" json:"school,omitempty"`
@@ -61,7 +62,8 @@ type ScheduleFilterEntity struct {
 }
 
 func NewSchedules(
-	schoolID, requirementID, roomID, slotID int64,
+	schoolID, requirementID, slotID int64,
+	roomID *int64,
 	version float64,
 	status ScheduleStatus,
 ) *Schedules {

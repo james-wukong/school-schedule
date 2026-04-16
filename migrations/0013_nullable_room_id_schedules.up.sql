@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE schedules
+ALTER COLUMN room_id DROP NOT NULL;
+
+COMMIT;

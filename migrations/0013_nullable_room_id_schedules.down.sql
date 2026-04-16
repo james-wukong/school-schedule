@@ -1,0 +1,9 @@
+BEGIN;
+
+DELETE FROM schedules
+WHERE room_id IS NULL;
+
+ALTER TABLE schedules
+ALTER COLUMN room_id SET NOT NULL;
+
+COMMIT;

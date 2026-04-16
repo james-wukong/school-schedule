@@ -8,6 +8,7 @@ type Repository interface {
 	// Create creates a new schedule in the repository
 	// and returns the created schedule or an error if the operation fails.
 	Create(ctx context.Context, schedule *Schedules) error
+	CreateInBatches(ctx context.Context, schedule []*Schedules) error
 
 	// GetByID retrieves a schedule by their unique identifier.
 	// It returns the schedule or an error if the schedule is not found.

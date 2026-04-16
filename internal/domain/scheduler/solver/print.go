@@ -49,7 +49,10 @@ func PrintTimetable(assignments []*model.Assignment, periods []string) {
 		grid := make(map[model.TimeSlot]*model.Assignment)
 		for _, a := range assignments {
 			if a.Requirement.SchoolClass.ID == sc.ID {
-				grid[a.Slot] = a
+				grid[model.TimeSlot{
+					StartTime: a.Slot.StartTime,
+					Day:       a.Slot.Day,
+				}] = a
 			}
 		}
 

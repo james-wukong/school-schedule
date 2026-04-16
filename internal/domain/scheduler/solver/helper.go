@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/james-wukong/school-schedule/internal/domain/scheduler/model"
+	"github.com/james-wukong/school-schedule/internal/domain/timeslot"
 )
 
 const (
@@ -82,15 +83,14 @@ func isTimeAfter(t, benchmark string) (bool, error) {
 	return t1.After(t2), nil
 }
 
-func ToTimeslots(ts map[model.DayOfWeek][]string) []model.TimeSlot {
+func ToTimeslots(ts []*timeslot.Timeslots) []model.TimeSlot {
 	var timeslots []model.TimeSlot
-	for key, value := range ts {
-		for _, slot := range value {
-			timeslots = append(timeslots, model.TimeSlot{
-				StartTime: slot,
-				Day:       key,
-			})
-		}
+	for _, value := range ts {
+		var ts model.TimeSlot
+		ts.ID = model.TimeSlotID(value.ID)
+		ts.Day = model.DayOfWeek(value.DayOfWeek)
+		ts.StartTime = time.Time(value.StartTime).Format(TimeMinutesLayout)
+		timeslots = append(timeslots, ts)
 	}
 	return timeslots
 }

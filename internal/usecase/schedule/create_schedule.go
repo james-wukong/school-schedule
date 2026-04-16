@@ -7,30 +7,40 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
+	"github.com/james-wukong/school-schedule/internal/domain/report"
 	"github.com/james-wukong/school-schedule/internal/domain/requirement"
 	"github.com/james-wukong/school-schedule/internal/domain/room"
+	"github.com/james-wukong/school-schedule/internal/domain/schedule"
 	"github.com/james-wukong/school-schedule/internal/domain/scheduler/model"
 	"github.com/james-wukong/school-schedule/internal/domain/scheduler/solver"
 	"github.com/james-wukong/school-schedule/internal/domain/timeslot"
 	"github.com/james-wukong/school-schedule/internal/interface/http/dto"
+	"github.com/james-wukong/school-schedule/internal/utils"
 )
 
 type CreateScheduleUseCase struct {
 	reqRepo  requirement.Repository
 	roomRepo room.Repository
 	tsRepo   timeslot.Repository
+	schdRepo schedule.Repository
+	reptRepo report.Repository
 }
 
 func NewCreateScheduleUseCase(
 	reqRepo requirement.Repository,
 	roomRepo room.Repository,
 	tsRepo timeslot.Repository,
+	schdRepo schedule.Repository,
+	reptRepo report.Repository,
 ) *CreateScheduleUseCase {
 	return &CreateScheduleUseCase{
 		reqRepo:  reqRepo,
 		roomRepo: roomRepo,
 		tsRepo:   tsRepo,
+		schdRepo: schdRepo,
+		reptRepo: reptRepo,
 	}
 }
 
@@ -105,6 +115,8 @@ func (uc *CreateScheduleUseCase) Execute(
 	}
 
 	fmt.Println("\nSchool overview:")
+	fmt.Printf("\nSchool id: %d, Semester id: %d, version: %.2f",
+		input.SchoolID, input.SemesterID, input.Version)
 	fmt.Printf("  Requirements  : %d\n", len(requirements))
 	fmt.Printf("  Total sessions: %d\n", totalSessions)
 	if !input.ExcludeRooms {
@@ -113,7 +125,7 @@ func (uc *CreateScheduleUseCase) Execute(
 
 	// ── Phase 1: Feasibility ──────────────────
 	issues := solver.FeasibilityCheck(requirements, rooms,
-		solver.ToTimeslots(tsTimeslots),
+		solver.ToTimeslots(timeslots),
 		input.ExcludeRooms,
 	)
 	if len(issues) > 0 {
@@ -124,7 +136,7 @@ func (uc *CreateScheduleUseCase) Execute(
 	// ── Phase 2: Greedy Construction ──────────
 	fmt.Println("\n=== Phase 2: Greedy Construction ===")
 	initial := solver.GreedyConstruct(rng, requirements, rooms,
-		solver.ToTimeslots(tsTimeslots),
+		solver.ToTimeslots(timeslots),
 		input.ExcludeRooms,
 	)
 	fmt.Printf("  Placed %d / %d sessions\n", len(initial), totalSessions)
@@ -136,19 +148,60 @@ func (uc *CreateScheduleUseCase) Execute(
 		rng,
 		initial,
 		rooms,
-		solver.ToTimeslots(tsTimeslots),
+		solver.ToTimeslots(timeslots),
 		input.ExcludeRooms,
 		850.0,   // initial temperature
 		0.997,   // cooling rate
 		100_000, // iterations
 	)
 
-	// TODO: Save assignments
+	// Save optimized assignments to database
+	var schedules []*schedule.Schedules
+	for _, a := range optimised {
+		var s schedule.Schedules
+		s.RequirementID = int64(a.Requirement.ID)
+		s.SchoolID = input.SchoolID
+		s.SemesterID = input.SemesterID
+		if !input.ExcludeRooms {
+			*s.RoomID = int64(a.Room.ID)
+		}
+		s.TimeslotID = int64(a.Slot.ID)
+		s.Status = schedule.StatusDraft
+		s.Version = input.Version
+		schedules = append(schedules, &s)
+	}
+	if err := uc.schdRepo.CreateInBatches(ctx, schedules); err != nil {
+		return err
+	}
+
+	// Save to csv file
+	classFile, err := os.Create("class_report.csv")
+	defer classFile.Close()
+	// Write the UTF-8 BOM bytes first
+	classFile.Write([]byte{0xEF, 0xBB, 0xBF})
+	if err != nil {
+		return err
+	}
+	teacherFile, err := os.Create("teacher_report.csv")
+	defer teacherFile.Close()
+	teacherFile.Write([]byte{0xEF, 0xBB, 0xBF})
+	if err != nil {
+		return err
+	}
+	reportService := utils.NewClassReportService(uc.reptRepo)
+	teacherService := utils.NewTeacherReportService(uc.reptRepo)
+	if err := reportService.ExportToCSV(ctx, classFile, input.SemesterID, input.Version); err != nil {
+		return err
+	}
+	if err := teacherService.ExportToCSV(ctx, teacherFile, input.SemesterID, input.Version); err != nil {
+		return err
+	}
 
 	// ── Phase 4: Output ───────────────────────
 	solver.PrintTimetable(optimised, solver.SampleHeader(tsTimeslots))
 	solver.PrintTeacherSchedules(optimised, input.ExcludeRooms)
 	solver.PrintSummary(optimised, totalSessions, input.ExcludeRooms)
+	fmt.Printf("slot id: %d", optimised[0].Slot.ID)
 
 	return nil
 }
