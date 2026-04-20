@@ -1,6 +1,7 @@
 vendor/
 tmp/
 storage/
+logs/
 config/.env
 config/*.yaml
 
