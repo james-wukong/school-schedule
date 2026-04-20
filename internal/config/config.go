@@ -8,12 +8,12 @@ import (
 )
 
 type Config struct {
-	App          AppConfig      `mapstructure:"app"`
-	Database     DatabaseConfig `mapstructure:"databases"`
-	Caches       CacheConfig    `mapstructure:"caches"`
-	JWT          JWTConfig      `mapstructure:"jwt"`
-	OTP          OtpConfig      `mapstructure:"otp"`
-	KafkaBrokers []string       `mapstructure:"kafka_brokers"`
+	App      AppConfig      `mapstructure:"app"`
+	Database DatabaseConfig `mapstructure:"databases"`
+	Caches   CacheConfig    `mapstructure:"caches"`
+	JWT      JWTConfig      `mapstructure:"jwt"`
+	OTP      OtpConfig      `mapstructure:"otp"`
+	Kafka    KafkaConfig    `mapstructure:"kafka"`
 }
 
 type AppConfig struct {
@@ -64,6 +64,12 @@ type JWTConfig struct {
 type OtpConfig struct {
 	Email    string `mapstructure:"email"`
 	Password string `mapstructure:"password"`
+}
+
+type KafkaConfig struct {
+	Brokers []string `mapstructure:"brokers"`
+	Topic   string   `mapstructure:"topic"`
+	GroupID string   `mapstructure:"group_id"`
 }
 
 func InitConfig() *Config {

@@ -1,4 +1,4 @@
-// Package handlers contains HTTP handlers for schedule-related endpoints.
+// Package handler contains HTTP handlers for schedule-related endpoints.
 package handler
 
 import (

@@ -8,7 +8,6 @@ app:
   debug: true
   apikey: "1a02b3c4d5e6f7g8h9i0j"
 
-
 # database config section
 databases:
   postgres:
@@ -19,8 +18,10 @@ databases:
     port: 5432
     db: "scheduling"
     ssl: "disable"
-    dsn: "user=postgres password=008008 host=postgres_container port=5432 dbname=scheduling sslmode=disable timezone=Asia/Shanghai"
-    url: "postgres://postgres:008008@postgres_container/scheduling?sslmode=disable&timezone=Asia/Shanghai"
+    dsn: "user=postgres password=008008 host=postgres_container port=5432
+      dbname=scheduling sslmode=disable timezone=Asia/Shanghai"
+    url: "postgres://postgres:008008@postgres_container/scheduling?sslmode=disable&\
+      timezone=Asia/Shanghai"
 
 # cache config section
 caches:
@@ -46,9 +47,10 @@ otp:
 
 kafka:
   brokers:
-    - "kafka1: 9092"
-    - "kafka2: 9092"
-
+    - "kafka-kraft-container: 9092"
+    - "kafka-kraft-container: 9092"
+  topic: "schedule_tasks"
+  group_id: "schedule_engine_group"
 
 # tutorial is a key with a list of dictionaries.
 # Each dictionary has key-value pairs with explicit typing.
