@@ -14,7 +14,7 @@ type roomRepository struct {
 	log *zerolog.Logger
 }
 
-func NewRoomRepository(db *gorm.DB, log *zerolog.Logger) room.Repository {
+func NewRoomRepository(db *gorm.DB, log *zerolog.Logger) *roomRepository {
 	return &roomRepository{db: db, log: log}
 }
 

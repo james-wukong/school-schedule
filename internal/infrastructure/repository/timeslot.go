@@ -12,7 +12,7 @@ type CachedTimeslotRepository struct {
 }
 
 func NewCachedTimeslotRepository(repo timeslot.Repository, cache timeslot.RedisCache,
-) timeslot.Repository {
+) *CachedTimeslotRepository {
 	return &CachedTimeslotRepository{
 		repo:  repo,
 		cache: cache,

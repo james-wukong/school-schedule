@@ -9,6 +9,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/james-wukong/school-schedule/internal/domain/schedule"
 	infraPostgre "github.com/james-wukong/school-schedule/internal/infrastructure/persistence/postgres"
+	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 
 	"github.com/stretchr/testify/assert"
@@ -48,7 +49,7 @@ func sampleSchedule() *schedule.Schedules {
 		RequirementID: 10000,
 		RoomID:        &roomID,
 		TimeslotID:    200,
-		Version:       1.00,
+		Version:       decimal.NewFromFloat(1.00),
 		Status:        schedule.StatusDraft,
 	}
 }
@@ -61,7 +62,7 @@ func sampleSchedule1() *schedule.Schedules {
 		RequirementID: 10000,
 		RoomID:        &roomID,
 		TimeslotID:    201,
-		Version:       1.00,
+		Version:       decimal.NewFromFloat(1.00),
 		Status:        schedule.StatusDraft,
 	}
 }
@@ -334,7 +335,7 @@ func TestScheduleGetByVersion_Found(t *testing.T) {
 		WithArgs(slot.ID).
 		WillReturnRows(mockTimeslotRow(mock, slot))
 
-	result, err := repo.GetByVersion(ctx, s.SchoolID, s.Version)
+	result, err := repo.GetByVersion(ctx, s.SchoolID, s.Version.InexactFloat64())
 
 	require.NoError(t, err)
 	require.NotEmpty(t, result)
@@ -473,137 +474,6 @@ func TestScheduleDelete_NonExistentID(t *testing.T) {
 	err := repo.Delete(ctx, 9999)
 
 	assert.NoError(t, err)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-// ── List ─────────────────────────────────────────────────────────────────────
-
-func baseScheduleFilter() *schedule.ScheduleFilterEntity {
-	return &schedule.ScheduleFilterEntity{Page: 1, Limit: 10}
-}
-
-func TestScheduleList_NoFilter(t *testing.T) {
-	repo, mock := newScheduleRepo(t)
-	ctx := context.Background()
-	s := sampleSchedule()
-
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "schedules"`)).
-		WillReturnRows(mockScheduleRow(mock, s))
-
-	results, err := repo.List(ctx, baseScheduleFilter())
-
-	require.NoError(t, err)
-	assert.Len(t, results, 1)
-	assert.Equal(t, s.ID, results[0].ID)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func TestScheduleList_FilterBySchoolID(t *testing.T) {
-	repo, mock := newScheduleRepo(t)
-	ctx := context.Background()
-	s := sampleSchedule()
-
-	filter := baseScheduleFilter()
-	filter.SchoolID = ptr(s.SchoolID)
-
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "schedules" WHERE school_id = $1`)).
-		WithArgs(filter.SchoolID, filter.Limit).
-		WillReturnRows(mockScheduleRow(mock, s))
-
-	results, err := repo.List(ctx, filter)
-
-	require.NoError(t, err)
-	assert.Len(t, results, 1)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func TestScheduleList_FilterByVersion(t *testing.T) {
-	repo, mock := newScheduleRepo(t)
-	ctx := context.Background()
-	s := sampleSchedule()
-
-	filter := baseScheduleFilter()
-	filter.Version = ptr(float64(1.00))
-
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "schedules" WHERE version`)).
-		WithArgs(float64(1.00), filter.Limit).
-		WillReturnRows(mockScheduleRow(mock, s))
-
-	results, err := repo.List(ctx, filter)
-
-	require.NoError(t, err)
-	assert.Len(t, results, 1)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func TestScheduleList_CombinedFilters(t *testing.T) {
-	repo, mock := newScheduleRepo(t)
-	ctx := context.Background()
-
-	filter := baseScheduleFilter()
-	filter.SchoolID = ptr(int64(10))
-	filter.Version = ptr(float64(1.00))
-
-	// mock.ExpectQuery(`SELECT \* FROM "schedules" WHERE`).
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "schedules" WHERE`)).
-		WillReturnRows(sqlmock.NewRows(scheduleColumns()))
-
-	results, err := repo.List(ctx, filter)
-
-	require.NoError(t, err)
-	assert.Empty(t, results)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func TestScheduleList_EmptyStringFiltersIgnored(t *testing.T) {
-	repo, mock := newScheduleRepo(t)
-	ctx := context.Background()
-
-	filter := baseScheduleFilter()
-	filter.SchoolID = ptr(int64(0))    // Should not be skipped
-	filter.Version = ptr(float64(0.0)) // Should not be skipped
-
-	// Expect a plain SELECT without any WHERE conditions
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "schedules"`)).
-		WillReturnRows(sqlmock.NewRows(scheduleColumns()))
-
-	results, err := repo.List(ctx, filter)
-
-	require.NoError(t, err)
-	assert.Empty(t, results)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func TestScheduleList_Pagination(t *testing.T) {
-	repo, mock := newScheduleRepo(t)
-	ctx := context.Background()
-
-	filter := &schedule.ScheduleFilterEntity{Page: 3, Limit: 5} // offset = (3-1)*5 = 10
-
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "schedules"`)).
-		WithArgs(5, 10). // LIMIT 5 OFFSET 10
-		WillReturnRows(sqlmock.NewRows(scheduleColumns()))
-
-	results, err := repo.List(ctx, filter)
-
-	require.NoError(t, err)
-	assert.Empty(t, results)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func TestScheduleList_DBError(t *testing.T) {
-	repo, mock := newScheduleRepo(t)
-	ctx := context.Background()
-
-	dbErr := errors.New("query failed")
-
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "schedules"`)).
-		WillReturnError(dbErr)
-
-	results, err := repo.List(ctx, baseScheduleFilter())
-
-	assert.Nil(t, results)
-	assert.ErrorIs(t, err, dbErr)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 

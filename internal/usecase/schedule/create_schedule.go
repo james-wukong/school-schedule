@@ -7,9 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 
-	"github.com/james-wukong/school-schedule/internal/domain/report"
 	"github.com/james-wukong/school-schedule/internal/domain/requirement"
 	"github.com/james-wukong/school-schedule/internal/domain/room"
 	"github.com/james-wukong/school-schedule/internal/domain/schedule"
@@ -17,7 +15,6 @@ import (
 	"github.com/james-wukong/school-schedule/internal/domain/scheduler/solver"
 	"github.com/james-wukong/school-schedule/internal/domain/timeslot"
 	"github.com/james-wukong/school-schedule/internal/interface/http/dto"
-	"github.com/james-wukong/school-schedule/internal/utils"
 )
 
 type CreateScheduleUseCase struct {
@@ -25,7 +22,6 @@ type CreateScheduleUseCase struct {
 	roomRepo room.Repository
 	tsRepo   timeslot.Repository
 	schdRepo schedule.Repository
-	reptRepo report.Repository
 }
 
 func NewCreateScheduleUseCase(
@@ -33,21 +29,19 @@ func NewCreateScheduleUseCase(
 	roomRepo room.Repository,
 	tsRepo timeslot.Repository,
 	schdRepo schedule.Repository,
-	reptRepo report.Repository,
 ) *CreateScheduleUseCase {
 	return &CreateScheduleUseCase{
 		reqRepo:  reqRepo,
 		roomRepo: roomRepo,
 		tsRepo:   tsRepo,
 		schdRepo: schdRepo,
-		reptRepo: reptRepo,
 	}
 }
 
 func (uc *CreateScheduleUseCase) Execute(
 	ctx context.Context,
 	input dto.CreateScheduleRequest,
-) error {
+) (dto.CreateScheduleResponse, error) {
 	rng := solver.NewFastRNG()
 
 	fmt.Println("╔══════════════════════════════════════╗")
@@ -57,14 +51,17 @@ func (uc *CreateScheduleUseCase) Execute(
 	// Initialize requirements, rooms and teachers
 	// requirements, rooms, _ := solver.Init()
 	// 1. Get requirements for a specific verion of a semester
-	reqs, err := uc.reqRepo.GetByVersion(ctx, input.SchoolID, input.SemesterID, input.Version)
+	reqs, err := uc.reqRepo.GetByVersion(
+		ctx, input.SchoolID, input.SemesterID, input.Version.InexactFloat64(),
+	)
 	if err != nil {
-		return err
+		return dto.CreateScheduleResponse{}, err
 	}
 	if len(reqs) == 0 {
-		return fmt.Errorf("no requirements found for school: %d, semester: %d, and version, %f",
-			input.SchoolID, input.SemesterID, input.Version,
-		)
+		return dto.CreateScheduleResponse{},
+			fmt.Errorf("no requirements found for school: %d, semester: %d, and version, %f",
+				input.SchoolID, input.SemesterID, input.Version,
+			)
 	}
 
 	// 2. Get available rooms
@@ -72,14 +69,14 @@ func (uc *CreateScheduleUseCase) Execute(
 	if !input.ExcludeRooms {
 		schoolRooms, err = uc.roomRepo.GetBySchoolID(ctx, input.SchoolID)
 		if err != nil {
-			return err
+			return dto.CreateScheduleResponse{}, err
 		}
 	}
 
 	// 3. Get Available Hours
 	timeslots, err := uc.tsRepo.GetBySemesterID(ctx, input.SemesterID)
 	if err != nil {
-		return err
+		return dto.CreateScheduleResponse{}, err
 	}
 	tsTimeslots := timeslot.ToTimeslotMap(timeslots)
 
@@ -88,10 +85,10 @@ func (uc *CreateScheduleUseCase) Execute(
 	for _, row := range reqs {
 		r, err := row.ToSolverModel()
 		if err != nil {
-			return err
+			return dto.CreateScheduleResponse{}, err
 		}
 		if row.Teacher == nil {
-			return errors.New("no teacher found")
+			return dto.CreateScheduleResponse{}, errors.New("no teacher found")
 		}
 		if len(row.Teacher.Timeslots) == 0 {
 			r.Teacher.AvailableTimes = tsTimeslots
@@ -116,7 +113,7 @@ func (uc *CreateScheduleUseCase) Execute(
 
 	fmt.Println("\nSchool overview:")
 	fmt.Printf("\nSchool id: %d, Semester id: %d, version: %.2f",
-		input.SchoolID, input.SemesterID, input.Version)
+		input.SchoolID, input.SemesterID, input.Version.InexactFloat64())
 	fmt.Printf("  Requirements  : %d\n", len(requirements))
 	fmt.Printf("  Total sessions: %d\n", totalSessions)
 	if !input.ExcludeRooms {
@@ -130,7 +127,7 @@ func (uc *CreateScheduleUseCase) Execute(
 	)
 	if len(issues) > 0 {
 		fmt.Println("\nStopping: feasibility issues found.")
-		return fmt.Errorf("feasibility issues found")
+		return dto.CreateScheduleResponse{}, fmt.Errorf("feasibility issues found")
 	}
 
 	// ── Phase 2: Greedy Construction ──────────
@@ -155,8 +152,9 @@ func (uc *CreateScheduleUseCase) Execute(
 		100_000, // iterations
 	)
 
-	// Save optimized assignments to database
+	// Generate a new schedule version number and save optimized assignments to database
 	var schedules []*schedule.Schedules
+	schdVersion := uc.schdRepo.CreateVersionNumber(ctx, input.SemesterID)
 	for _, a := range optimised {
 		var s schedule.Schedules
 		s.RequirementID = int64(a.Requirement.ID)
@@ -167,41 +165,48 @@ func (uc *CreateScheduleUseCase) Execute(
 		}
 		s.TimeslotID = int64(a.Slot.ID)
 		s.Status = schedule.StatusDraft
-		s.Version = input.Version
+		s.Version = schdVersion
 		schedules = append(schedules, &s)
 	}
 	if err := uc.schdRepo.CreateInBatches(ctx, schedules); err != nil {
-		return err
+		return dto.CreateScheduleResponse{}, err
 	}
 
-	// Save to csv file
-	classFile, err := os.Create("class_report.csv")
-	defer classFile.Close()
-	// Write the UTF-8 BOM bytes first
-	classFile.Write([]byte{0xEF, 0xBB, 0xBF})
-	if err != nil {
-		return err
-	}
-	teacherFile, err := os.Create("teacher_report.csv")
-	defer teacherFile.Close()
-	teacherFile.Write([]byte{0xEF, 0xBB, 0xBF})
-	if err != nil {
-		return err
-	}
-	reportService := utils.NewClassReportService(uc.reptRepo)
-	teacherService := utils.NewTeacherReportService(uc.reptRepo)
-	if err := reportService.ExportToCSV(ctx, classFile, input.SemesterID, input.Version); err != nil {
-		return err
-	}
-	if err := teacherService.ExportToCSV(ctx, teacherFile, input.SemesterID, input.Version); err != nil {
-		return err
-	}
+	// // Save to csv file
+	// classFile, err := os.Create("class_report.csv")
+	// defer classFile.Close()
+	// // Write the UTF-8 BOM bytes first
+	// classFile.Write([]byte{0xEF, 0xBB, 0xBF})
+	// if err != nil {
+	// 	return err
+	// }
+	// teacherFile, err := os.Create("teacher_report.csv")
+	// defer teacherFile.Close()
+	// teacherFile.Write([]byte{0xEF, 0xBB, 0xBF})
+	// if err != nil {
+	// 	return err
+	// }
+	// reportService := utils.NewClassReportService(uc.reptRepo)
+	// teacherService := utils.NewTeacherReportService(uc.reptRepo)
+	// if err := reportService.ExportToCSV(
+	// 	ctx, classFile, input.SemesterID, input.Version.InexactFloat64(),
+	// ); err != nil {
+	// 	return err
+	// }
+	// if err := teacherService.ExportToCSV(
+	// 	ctx, teacherFile, input.SemesterID, input.Version.InexactFloat64(),
+	// ); err != nil {
+	// 	return err
+	// }
 
 	// ── Phase 4: Output ───────────────────────
 	solver.PrintTimetable(optimised, solver.SampleHeader(tsTimeslots))
 	solver.PrintTeacherSchedules(optimised, input.ExcludeRooms)
 	solver.PrintSummary(optimised, totalSessions, input.ExcludeRooms)
-	fmt.Printf("slot id: %d", optimised[0].Slot.ID)
 
-	return nil
+	return dto.CreateScheduleResponse{
+		SchoolID:        input.SchoolID,
+		SemesterID:      input.SemesterID,
+		ScheduleVersion: schdVersion,
+	}, nil
 }

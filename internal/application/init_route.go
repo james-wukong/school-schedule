@@ -15,12 +15,11 @@ func (a *App) initScheduleRouter() *handler.ScheduleHandler {
 	roomRepo := infraPostgres.NewRoomRepository(a.Database.DB, a.Log)
 	tsRepo := infraPostgres.NewTimeslotRepository(a.Database.DB, a.Log)
 	schdRepo := infraPostgres.NewScheduleRepository(a.Database.DB, a.Log)
-	reptRepo := infraPostgres.NewReportRepository(a.Database.DB, a.Log)
 
 	// 2. UseCase Layer: Business Logic ---
 	// THIS IS HOW YOU CREATE THE createScheduleUC VARIABLE
 	// We pass the repository into the UseCase constructor
-	createUC := schedulerUC.NewCreateScheduleUseCase(reqRepo, roomRepo, tsRepo, schdRepo, reptRepo)
+	createUC := schedulerUC.NewCreateScheduleUseCase(reqRepo, roomRepo, tsRepo, schdRepo)
 
 	// 3. Handler Layer: HTTP Handlers ---
 	return handler.NewScheduleHandler(createUC)

@@ -8,7 +8,6 @@ package solver
 // three map[string]bool tables keyed as "entityID_day_period" for O(1) lookup
 
 import (
-	"fmt"
 	"math/rand/v2"
 	"slices"
 
@@ -145,13 +144,13 @@ func GreedyConstruct(
 			}
 		}
 
-		if !placed {
-			fmt.Printf("  ⚠ Could not place: %s-%s | %s | %s\n",
-				req.SchoolClass.Grade, req.SchoolClass.Class,
-				req.Subject.Name,
-				req.Teacher.Name,
-			)
-		}
+		// if !placed {
+		// 	fmt.Printf("  ⚠ Could not place: %s-%s | %s | %s\n",
+		// 		req.SchoolClass.Grade, req.SchoolClass.Class,
+		// 		req.Subject.Name,
+		// 		req.Teacher.Name,
+		// 	)
+		// }
 	}
 	if len(assignments) == len(sessions) {
 		return assignments

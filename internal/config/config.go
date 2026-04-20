@@ -8,12 +8,13 @@ import (
 )
 
 type Config struct {
-	App      AppConfig      `mapstructure:"app"`
-	Database DatabaseConfig `mapstructure:"databases"`
-	Caches   CacheConfig    `mapstructure:"caches"`
-	JWT      JWTConfig      `mapstructure:"jwt"`
-	OTP      OtpConfig      `mapstructure:"otp"`
-	Kafka    KafkaConfig    `mapstructure:"kafka"`
+	App       AppConfig       `mapstructure:"app"`
+	Database  DatabaseConfig  `mapstructure:"databases"`
+	Caches    CacheConfig     `mapstructure:"caches"`
+	JWT       JWTConfig       `mapstructure:"jwt"`
+	OTP       OtpConfig       `mapstructure:"otp"`
+	Kafka     KafkaConfig     `mapstructure:"kafka"`
+	Scheduler SchedulerConfig `mapstructure:"scheduler"`
 }
 
 type AppConfig struct {
@@ -72,10 +73,16 @@ type KafkaConfig struct {
 	GroupID string   `mapstructure:"group_id"`
 }
 
+type SchedulerConfig struct {
+	URI        string `mapstructure:"uri"`
+	MaxRetries int    `mapstructure:"max_retries"`
+}
+
 func InitConfig() *Config {
 	viper.SetConfigName("config") // Name of your file (config.yaml)
 	viper.SetConfigType("yml")
 	viper.AddConfigPath(".") // Look in the current directory (project folder)
+	viper.AddConfigPath("/app")
 
 	// Enable environment variable overrides
 	// Example: export APP_PORT=9000 will override the YAML

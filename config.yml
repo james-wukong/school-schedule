@@ -47,10 +47,14 @@ otp:
 
 kafka:
   brokers:
-    - "kafka-kraft-container: 9092"
-    - "kafka-kraft-container: 9092"
+    - "kafka-kraft-container:9092"
+    # - "kafka-kraft-container:9092"
   topic: "schedule_tasks"
   group_id: "schedule_engine_group"
+
+scheduler:
+  uri: "http://school-mgmt-container:8091"
+  max_retries: 10
 
 # tutorial is a key with a list of dictionaries.
 # Each dictionary has key-value pairs with explicit typing.
