@@ -9,6 +9,7 @@ import (
 	"github.com/james-wukong/school-schedule/internal/domain/room"
 	"github.com/james-wukong/school-schedule/internal/domain/school"
 	"github.com/james-wukong/school-schedule/internal/domain/timeslot"
+	"github.com/shopspring/decimal"
 )
 
 // ScheduleStatus represents the lifecycle state of a generated timetable.
@@ -42,37 +43,10 @@ type Schedules struct {
 
 	// Metadata and Status
 	// Note: We use the custom ScheduleStatus type for type safety in Go.
-	Status  ScheduleStatus `gorm:"column:status;type:schedule_status_enum;default:Draft;index:idx_schedules_status" json:"status"`
-	Version float64        `gorm:"column:version;type:numeric(10,2);default:1.00;uniqueIndex:idx_sch_room_time;uniqueIndex:idx_sch_req_time" json:"version"`
+	Status  ScheduleStatus  `gorm:"column:status;type:schedule_status_enum;default:Draft;index:idx_schedules_status" json:"status"`
+	Version decimal.Decimal `gorm:"column:version;type:numeric(10,2);default:1.00;uniqueIndex:idx_sch_ver_room_time;uniqueIndex:idx_sch_ver_req_time" json:"version"`
 
 	// Audit Timestamps
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
-}
-
-type ScheduleFilterEntity struct {
-	SchoolID      *int64
-	RequirementID *int64
-	RoomID        *int64
-	TimeslotID    *int64
-	Version       *float64
-	Status        *ScheduleStatus
-	Page          int
-	Limit         int
-}
-
-func NewSchedules(
-	schoolID, requirementID, slotID int64,
-	roomID *int64,
-	version float64,
-	status ScheduleStatus,
-) *Schedules {
-	return &Schedules{
-		SchoolID:      schoolID,
-		RequirementID: requirementID,
-		RoomID:        roomID,
-		TimeslotID:    slotID,
-		Version:       version,
-		Status:        status,
-	}
 }

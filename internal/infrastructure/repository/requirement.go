@@ -12,7 +12,7 @@ type CachedRequirementRepository struct {
 }
 
 func NewCachedRequirementRepository(repo requirement.Repository, cache requirement.RedisCache,
-) requirement.Repository {
+) *CachedRequirementRepository {
 	return &CachedRequirementRepository{
 		repo:  repo,
 		cache: cache,

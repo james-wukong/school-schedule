@@ -15,7 +15,7 @@ type teacherRepository struct {
 	log *zerolog.Logger
 }
 
-func NewTeacherRepository(db *gorm.DB, log *zerolog.Logger) teacher.Repository {
+func NewTeacherRepository(db *gorm.DB, log *zerolog.Logger) *teacherRepository {
 	return &teacherRepository{db: db, log: log}
 }
 

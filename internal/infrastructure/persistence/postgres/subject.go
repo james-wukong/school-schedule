@@ -15,7 +15,7 @@ type subjectRepository struct {
 	log *zerolog.Logger
 }
 
-func NewSubjectRepository(db *gorm.DB, log *zerolog.Logger) subject.Repository {
+func NewSubjectRepository(db *gorm.DB, log *zerolog.Logger) *subjectRepository {
 	return &subjectRepository{db: db, log: log}
 }
 

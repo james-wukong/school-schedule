@@ -53,11 +53,11 @@ func (h *ScheduleHandler) Create(c *gin.Context) {
 		return
 	}
 
-	err := h.createScheduleUC.Execute(c.Request.Context(), req)
+	resp, err := h.createScheduleUC.Execute(c.Request.Context(), req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	// Map domain entity to response DTO
-	c.JSON(http.StatusCreated, nil)
+	c.JSON(http.StatusCreated, resp)
 }

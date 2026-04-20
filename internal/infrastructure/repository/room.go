@@ -12,7 +12,7 @@ type CachedRoomRepository struct {
 }
 
 func NewCachedRoomRepository(repo room.Repository, cache room.RedisCache,
-) room.Repository {
+) *CachedRoomRepository {
 	return &CachedRoomRepository{
 		repo:  repo,
 		cache: cache,

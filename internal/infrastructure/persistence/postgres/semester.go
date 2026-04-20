@@ -14,7 +14,7 @@ type semesterRepository struct {
 	log *zerolog.Logger
 }
 
-func NewSemesterRepository(db *gorm.DB, log *zerolog.Logger) semester.Repository {
+func NewSemesterRepository(db *gorm.DB, log *zerolog.Logger) *semesterRepository {
 	return &semesterRepository{db: db, log: log}
 }
 

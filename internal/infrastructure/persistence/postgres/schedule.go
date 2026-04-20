@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"errors"
+	"math/rand/v2"
 
 	"github.com/james-wukong/school-schedule/internal/domain/schedule"
 	"github.com/rs/zerolog"
+	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
 
@@ -14,7 +16,7 @@ type scheduleRepository struct {
 	log *zerolog.Logger
 }
 
-func NewScheduleRepository(db *gorm.DB, log *zerolog.Logger) schedule.Repository {
+func NewScheduleRepository(db *gorm.DB, log *zerolog.Logger) *scheduleRepository {
 	return &scheduleRepository{db: db, log: log}
 }
 
@@ -153,37 +155,24 @@ func (r *scheduleRepository) Delete(ctx context.Context, id int64) error {
 	return err
 }
 
-// Implement List method
-func (r *scheduleRepository) List(
-	ctx context.Context,
-	filter *schedule.ScheduleFilterEntity,
-) ([]*schedule.Schedules, error) {
-	var rows []*schedule.Schedules
-	query := r.db.WithContext(ctx).Model(&schedule.Schedules{})
-	if filter != nil {
-		if filter.SchoolID != nil {
-			query = query.Where("school_id = ?", filter.SchoolID)
-		}
-		if filter.RequirementID != nil {
-			query = query.Where("requirement_id = ?", filter.RequirementID)
-		}
-		if filter.RoomID != nil {
-			query = query.Where("room_id = ?", filter.RoomID)
-		}
-		if filter.TimeslotID != nil {
-			query = query.Where("timeslot_id = ?", filter.TimeslotID)
-		}
-		if filter.Version != nil {
-			query = query.Where("version = ?", filter.Version)
-		}
-		if filter.Status != nil {
-			query = query.Where("status = ?", filter.Status)
+func (r *scheduleRepository) CreateVersionNumber(
+	ctx context.Context, semesterID int64,
+) decimal.Decimal {
+	var m schedule.Schedules
+	err := r.db.WithContext(ctx).
+		Select("id", "version").
+		Where("semester_id = ?", semesterID).
+		Order("version DESC").
+		First(&m).
+		Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return decimal.NewFromFloat(1.00)
 		}
 	}
+	randMin := 0.01
+	randMax := 0.06
 
-	err := query.Limit(filter.Limit).
-		Offset((filter.Page - 1) * filter.Limit).
-		Find(&rows).
-		Error
-	return rows, err
+	res := randMin + rand.Float64()*(randMax-randMin)
+	return m.Version.Add(decimal.NewFromFloat(res))
 }

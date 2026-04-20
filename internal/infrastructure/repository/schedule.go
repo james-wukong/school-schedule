@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/james-wukong/school-schedule/internal/domain/schedule"
+	"github.com/shopspring/decimal"
 )
 
 type CachedScheduleRepository struct {
@@ -13,7 +14,7 @@ type CachedScheduleRepository struct {
 
 func NewCachedScheduleRepository(
 	repo schedule.Repository, cache schedule.RedisCache,
-) schedule.Repository {
+) *CachedScheduleRepository {
 	return &CachedScheduleRepository{
 		repo:  repo,
 		cache: cache,
@@ -54,6 +55,12 @@ func (c *CachedScheduleRepository) GetByVersion(
 	return nil, nil
 }
 
+func (r *CachedScheduleRepository) CreateVersionNumber(
+	ctx context.Context, semesterID int64,
+) decimal.Decimal {
+	return r.repo.CreateVersionNumber(ctx, semesterID)
+}
+
 func (c *CachedScheduleRepository) Update(
 	ctx context.Context, schedule *schedule.Schedules,
 ) error {
@@ -62,10 +69,4 @@ func (c *CachedScheduleRepository) Update(
 
 func (c *CachedScheduleRepository) Delete(ctx context.Context, id int64) error {
 	return nil
-}
-
-func (c *CachedScheduleRepository) List(
-	ctx context.Context, filter *schedule.ScheduleFilterEntity,
-) ([]*schedule.Schedules, error) {
-	return nil, nil
 }
