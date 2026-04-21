@@ -1,3 +1,4 @@
+// Package solver provide solution to scheduling problems
 package solver
 
 // Hard violations count teacher/class/room double-bookings.
