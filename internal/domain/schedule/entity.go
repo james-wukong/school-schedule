@@ -30,7 +30,7 @@ type Schedules struct {
 
 	// Foreign Keys
 	SchoolID      int64  `gorm:"column:school_id;not null;index:idx_schedules_school" json:"school_id"`
-	SemesterID    int64  `gorm:"column:semester_id;not null;uniqueIndex:uq_schedules_room_key;uniqueIndex:uq_schedules_requirement_key;index:idx_schedules_semester" json:"school_id"`
+	SemesterID    int64  `gorm:"column:semester_id;not null;uniqueIndex:uq_schedules_room_key;uniqueIndex:uq_schedules_requirement_key;index:idx_schedules_semester" json:"semester_id"`
 	RequirementID int64  `gorm:"column:requirement_id;not null;uniqueIndex:uq_schedules_requirement_key;index:idx_schedules_requirement" json:"requirement_id"`
 	RoomID        *int64 `gorm:"column:room_id;default:null;uniqueIndex:uq_schedules_room_key;index:idx_schedules_room" json:"room_id"`
 	TimeslotID    int64  `gorm:"column:timeslot_id;not null;uniqueIndex:uq_schedules_room_key;uniqueIndex:uq_schedules_requirement_key;index:idx_schedules_timeslot" json:"timeslot_id"`

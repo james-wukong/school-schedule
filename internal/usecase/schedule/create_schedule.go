@@ -59,8 +59,8 @@ func (uc *CreateScheduleUseCase) Execute(
 	}
 	if len(reqs) == 0 {
 		return dto.CreateScheduleResponse{},
-			fmt.Errorf("no requirements found for school: %d, semester: %d, and version, %f",
-				input.SchoolID, input.SemesterID, input.Version,
+			fmt.Errorf("no requirements found for school: %d, semester: %d, and version, %.2f",
+				input.SchoolID, input.SemesterID, input.Version.InexactFloat64(),
 			)
 	}
 
@@ -171,33 +171,6 @@ func (uc *CreateScheduleUseCase) Execute(
 	if err := uc.schdRepo.CreateInBatches(ctx, schedules); err != nil {
 		return dto.CreateScheduleResponse{}, err
 	}
-
-	// // Save to csv file
-	// classFile, err := os.Create("class_report.csv")
-	// defer classFile.Close()
-	// // Write the UTF-8 BOM bytes first
-	// classFile.Write([]byte{0xEF, 0xBB, 0xBF})
-	// if err != nil {
-	// 	return err
-	// }
-	// teacherFile, err := os.Create("teacher_report.csv")
-	// defer teacherFile.Close()
-	// teacherFile.Write([]byte{0xEF, 0xBB, 0xBF})
-	// if err != nil {
-	// 	return err
-	// }
-	// reportService := utils.NewClassReportService(uc.reptRepo)
-	// teacherService := utils.NewTeacherReportService(uc.reptRepo)
-	// if err := reportService.ExportToCSV(
-	// 	ctx, classFile, input.SemesterID, input.Version.InexactFloat64(),
-	// ); err != nil {
-	// 	return err
-	// }
-	// if err := teacherService.ExportToCSV(
-	// 	ctx, teacherFile, input.SemesterID, input.Version.InexactFloat64(),
-	// ); err != nil {
-	// 	return err
-	// }
 
 	// ── Phase 4: Output ───────────────────────
 	solver.PrintTimetable(optimised, solver.SampleHeader(tsTimeslots))
