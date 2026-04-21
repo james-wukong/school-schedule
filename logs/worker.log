@@ -81,3 +81,71 @@
 {"level":"info","time":"2026-04-20T09:49:48Z","message":"Worker started: Waiting for scheduling tasks..."}
 {"level":"info","time":"2026-04-20T09:50:12Z","message":"sending a request to Go-Admin to generate export files..."}
 {"level":"info","time":"2026-04-20T09:50:12Z","message":"mission complete..."}
+{"level":"info","time":"2026-04-20T22:07:51Z","message":"Worker started: Waiting for scheduling tasks..."}
+{"level":"info","time":"2026-04-20T22:08:16Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"error","time":"2026-04-20T22:08:26Z","message":"request cancelled: context deadline exceeded"}
+{"level":"error","error":"context deadline exceeded","time":"2026-04-20T22:08:26Z","message":"failed to make the exporter api call: context deadline exceeded"}
+{"level":"info","time":"2026-04-20T22:08:26Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T22:10:15Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"error","time":"2026-04-20T22:10:25Z","message":"request cancelled: context deadline exceeded"}
+{"level":"error","error":"context deadline exceeded","time":"2026-04-20T22:10:25Z","message":"failed to make the exporter api call: context deadline exceeded"}
+{"level":"info","time":"2026-04-20T22:10:25Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T22:38:29Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"error","time":"2026-04-20T22:38:39Z","message":"request cancelled: context deadline exceeded"}
+{"level":"error","error":"context deadline exceeded","time":"2026-04-20T22:38:39Z","message":"failed to make the exporter api call: context deadline exceeded"}
+{"level":"info","time":"2026-04-20T22:38:39Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T22:40:37Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"error","time":"2026-04-20T22:40:47Z","message":"request cancelled: context deadline exceeded"}
+{"level":"error","error":"context deadline exceeded","time":"2026-04-20T22:40:47Z","message":"failed to make the exporter api call: context deadline exceeded"}
+{"level":"info","time":"2026-04-20T22:40:47Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T22:44:51Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"error","time":"2026-04-20T22:45:01Z","message":"request cancelled: context deadline exceeded"}
+{"level":"error","error":"context deadline exceeded","time":"2026-04-20T22:45:01Z","message":"failed to make the exporter api call: context deadline exceeded"}
+{"level":"info","time":"2026-04-20T22:45:01Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T22:48:15Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"error","time":"2026-04-20T22:48:25Z","message":"request cancelled: context deadline exceeded"}
+{"level":"error","error":"context deadline exceeded","time":"2026-04-20T22:48:25Z","message":"failed to make the exporter api call: context deadline exceeded"}
+{"level":"info","time":"2026-04-20T22:48:25Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T22:53:19Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"error","time":"2026-04-20T22:53:29Z","message":"request cancelled: context deadline exceeded"}
+{"level":"error","error":"context deadline exceeded","time":"2026-04-20T22:53:29Z","message":"failed to make the exporter api call: context deadline exceeded"}
+{"level":"info","time":"2026-04-20T22:53:29Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T22:58:59Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"error","time":"2026-04-20T22:59:09Z","message":"request cancelled: context deadline exceeded"}
+{"level":"error","error":"context deadline exceeded","time":"2026-04-20T22:59:09Z","message":"failed to make the exporter api call: context deadline exceeded"}
+{"level":"info","time":"2026-04-20T22:59:09Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T23:06:11Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"error","time":"2026-04-20T23:06:21Z","message":"request cancelled: context deadline exceeded"}
+{"level":"error","error":"context deadline exceeded","time":"2026-04-20T23:06:21Z","message":"failed to make the exporter api call: context deadline exceeded"}
+{"level":"info","time":"2026-04-20T23:06:21Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T23:07:48Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"error","time":"2026-04-20T23:07:58Z","message":"request cancelled: context deadline exceeded"}
+{"level":"error","error":"context deadline exceeded","time":"2026-04-20T23:07:58Z","message":"failed to make the exporter api call: context deadline exceeded"}
+{"level":"info","time":"2026-04-20T23:07:58Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T23:11:32Z","message":"Worker started: Waiting for scheduling tasks..."}
+{"level":"info","time":"2026-04-20T23:12:18Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"info","time":"2026-04-20T23:12:18Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T23:39:23Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"info","time":"2026-04-20T23:39:23Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T23:46:29Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"info","time":"2026-04-20T23:46:29Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T23:47:39Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"info","time":"2026-04-20T23:47:39Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-20T23:50:37Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"info","time":"2026-04-20T23:50:37Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-21T00:01:43Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"info","time":"2026-04-21T00:01:43Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-21T00:20:39Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"info","time":"2026-04-21T00:20:39Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-21T00:21:04Z","message":"Worker started: Waiting for scheduling tasks..."}
+{"level":"info","time":"2026-04-21T00:23:32Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"info","time":"2026-04-21T00:23:32Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-21T01:28:21Z","message":"Worker started: Waiting for scheduling tasks..."}
+{"level":"info","time":"2026-04-21T01:29:09Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"info","time":"2026-04-21T01:29:09Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-21T02:06:43Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"info","time":"2026-04-21T02:06:43Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-21T02:13:53Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"info","time":"2026-04-21T02:13:53Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1.01 ExcludeRooms:true}..."}
+{"level":"info","time":"2026-04-21T03:15:48Z","message":"sending a request to Go-Admin to generate export files..."}
+{"level":"info","time":"2026-04-21T03:15:48Z","message":"mission complete: {SemesterID:1002 SchoolID:1000 Version:1 ExcludeRooms:true}..."}

@@ -79,7 +79,7 @@ func StartScheduleConsumer(
 		if err := reader.CommitMessages(ctx, m); err != nil {
 			wLog.Error().Err(err).Msgf("failed to commit message: %v", err)
 		}
-		wLog.Info().Msg("mission complete...")
+		wLog.Info().Msgf("mission complete: %+v...", req)
 	}
 }
 
@@ -87,8 +87,8 @@ func SchedulerAPIRequest(
 	ctx context.Context, req dto.CreateScheduleResponse, cfg *config.Config, wLog *zerolog.Logger,
 ) error {
 	wLog.Info().Msg("sending a request to Go-Admin to generate export files...")
-	// Create a context that expires in 10 seconds
-	reqCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	// Create a context that expires in 30 seconds
+	reqCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel() // Always call cancel to release resources
 	jsonData, err := json.Marshal(req)
 	if err != nil {
@@ -113,7 +113,7 @@ func SchedulerAPIRequest(
 	apiReq.Header.Set("Content-Type", "application/json")
 
 	for attempt := 0; attempt <= cfg.Scheduler.MaxRetries; attempt++ {
-		client := &http.Client{Timeout: 5 * time.Second}
+		client := &http.Client{Timeout: 10 * time.Second}
 		resp, err := client.Do(apiReq)
 		// succeed, break loop, and return
 		if err == nil && resp.StatusCode < 500 {
@@ -122,19 +122,20 @@ func SchedulerAPIRequest(
 				wLog.Error().Err(err).Msgf("failed to decode api response: %v", err)
 				continue
 			}
-			if result.Success {
-				return nil
+			if !result.Success {
+				wLog.Error().Err(err).Msgf("api response not success: %v", err)
+				continue
 			}
-
+			return nil
 		}
 		if err != nil {
 			wLog.Error().Err(err).Msgf("failed to get response from api: %v", err)
 		}
 		if attempt < cfg.Scheduler.MaxRetries {
 			select {
-			// Wait 1 second before retrying
+			// Wait 3 second before retrying
 			// Stop immediately if caller cancels request
-			case <-time.After(1 * time.Second):
+			case <-time.After(3 * time.Second):
 			case <-reqCtx.Done():
 				wLog.Error().Err(err).Msgf("request cancelled: %+v", reqCtx.Err())
 				return reqCtx.Err()

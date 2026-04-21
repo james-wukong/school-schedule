@@ -38,27 +38,6 @@ func isTeacherAvailable(teacher *model.Teacher, slot model.TimeSlot) bool {
 	return false
 }
 
-// isRoomAvailableInDomain checks if the room is available at the given time slot
-// based on the current domain (possible assignments)
-func isRoomAvailable(room *model.Room, slot model.TimeSlot) bool {
-	if times, ok := room.AvailableTimes[slot.Day]; ok {
-		for _, t := range times {
-			if t == slot.StartTime {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// dayDifference returns the number of days between two days of the week
-func dayDifference(startDay, endDay model.DayOfWeek) int {
-	if endDay < startDay {
-		return 10
-	}
-	return int(endDay) - int(startDay)
-}
-
 func minuteDifference(start, end string) int {
 	s, err := time.Parse(TimeMinutesLayout, start)
 	if err != nil {

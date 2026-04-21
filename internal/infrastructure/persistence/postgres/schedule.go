@@ -170,9 +170,7 @@ func (r *scheduleRepository) CreateVersionNumber(
 			return decimal.NewFromFloat(1.00)
 		}
 	}
-	randMin := 0.01
-	randMax := 0.06
-
-	res := randMin + rand.Float64()*(randMax-randMin)
-	return m.Version.Add(decimal.NewFromFloat(res))
+	// To get 1 to 3
+	randomInt := rand.IntN(3) + 1
+	return m.Version.Add(decimal.NewFromFloat(float64(randomInt) / 100))
 }
